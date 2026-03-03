@@ -1,6 +1,5 @@
 import React from "react";
 import { IconDotsVertical } from "@tabler/icons-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu";
@@ -99,14 +98,14 @@ const ExpensesTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">Date</TableHead>
+              <TableHead className="w-30">Date</TableHead>
               <TableHead>Expense</TableHead>
               <TableHead className="hidden lg:table-cell">Project</TableHead>
               <TableHead>Department</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead className="hidden md:table-cell">Vendor</TableHead>
               <TableHead className="hidden xl:table-cell">Notes</TableHead>
-              <TableHead className="w-[60px] text-right">Actions</TableHead>
+              <TableHead className="w-15 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -140,9 +139,24 @@ const ExpensesTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={(event) => {event.preventDefault(); onEditExpense?.(expense);}}>Edit (onEditExpense)</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          onEditExpense?.(expense);
+                        }}
+                      >
+                        Edit
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive" onSelect={(event) => {event.preventDefault(); onDeleteExpense?.(expense);}}>Delete (onDeleteExpense)</DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          onDeleteExpense?.(expense);
+                        }}
+                      >
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

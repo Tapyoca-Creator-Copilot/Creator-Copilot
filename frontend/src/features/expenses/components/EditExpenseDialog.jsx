@@ -3,7 +3,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
-
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,24 +12,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { EXPENSE_DEPARTMENTS, createExpense } from "@/features/expenses/services/expenses";
-import { DESCRIPTION_LIMIT, buildAddDefaultValues, expenseSchema, formatDateLabel, formatLocalYmd, parseLocalYmd, } from "@/features/expenses/utils/expenseForm";
+import { EXPENSE_DEPARTMENTS, updateExpense, } from "@/features/expenses/services/expenses";
+import { DESCRIPTION_LIMIT, buildEditDefaultValues, expenseSchema, formatDateLabel, formatLocalYmd, parseLocalYmd, } from "@/features/expenses/utils/expenseForm";
 
-const AddExpenseDialog = ({
+const EditExpenseDialog = ({
   open,
   onOpenChange,
   session,
   projects = [],
   selectedProjectId,
-  onCreated,
+  expense,
+  onUpdated,
 }) => {
   const currentYear = new Date().getFullYear();
   const minCalendarYear = currentYear - 36;
   const maxCalendarYear = currentYear + 10;
 
   const defaultValues = useMemo(
-    () => buildAddDefaultValues({ selectedProjectId, projects }),
-    [projects, selectedProjectId]
+    () => buildEditDefaultValues({ expense, selectedProjectId, projects }),
+    [expense, projects, selectedProjectId]
   );
 
   const form = useForm({
@@ -48,15 +48,18 @@ const AddExpenseDialog = ({
       return;
     }
 
-    // When opening, prefer the currently selected project.
-    if (selectedProjectId) {
-      form.setValue("projectId", selectedProjectId, { shouldValidate: true });
-    }
-  }, [defaultValues, form, open, selectedProjectId]);
+    form.reset(defaultValues);
+  }, [defaultValues, form, open]);
 
   const handleSubmit = async (values) => {
+    if (!expense?.id) {
+      toast.error("No expense selected to edit.");
+      return;
+    }
+
     try {
-      const result = await createExpense(
+      const result = await updateExpense(
+        expense.id,
         {
           projectId: values.projectId,
           name: values.name,
@@ -71,12 +74,11 @@ const AddExpenseDialog = ({
         { userId: session?.user?.id }
       );
 
-      toast.success("Expense added");
-      onCreated?.(result?.data);
+      toast.success("Expense updated");
+      onUpdated?.(result?.data);
       onOpenChange?.(false);
-      form.reset(buildAddDefaultValues({ selectedProjectId, projects }));
     } catch (error) {
-      toast.error(error?.message || "Unable to add expense. Please try again.");
+      toast.error(error?.message || "Unable to update expense. Please try again.");
     }
   };
 
@@ -86,10 +88,8 @@ const AddExpenseDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-linen dark:bg-card">
         <DialogHeader>
-          <DialogTitle>Add Expense</DialogTitle>
-          <DialogDescription>
-            Log a transaction for the selected project. Fields marked required help keep reporting accurate.
-          </DialogDescription>
+          <DialogTitle>Edit Expense</DialogTitle>
+          <DialogDescription>Update this transaction for the selected project.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -324,7 +324,7 @@ const AddExpenseDialog = ({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting || projectOptions.length === 0}>
-                {isSubmitting ? "Saving..." : "Add Expense"}
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
@@ -334,4 +334,4 @@ const AddExpenseDialog = ({
   );
 };
 
-export default AddExpenseDialog;
+export default EditExpenseDialog;

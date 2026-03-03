@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 
 import AddExpenseDialog from "@/features/expenses/components/AddExpenseDialog";
+import EditExpenseDialog from "@/features/expenses/components/EditExpenseDialog";
+import DeleteExpenseDialog from "@/features/expenses/components/DeleteExpenseDialog";
 import ExpenseFilters from "@/features/expenses/components/ExpenseFilters";
 import ExpensesTable from "@/features/expenses/components/ExpensesTable";
 import { getExpenses } from "@/features/expenses/services/expenses";
@@ -28,6 +30,10 @@ const Expenses = () => {
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [expenseToEdit, setExpenseToEdit] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
 
   const userName =
     session?.user?.user_metadata?.full_name ||
@@ -120,6 +126,16 @@ const Expenses = () => {
 
   const isProjectGateActive = !selectedProjectId;
 
+  const handleEditExpense = (expense) => {
+    setExpenseToEdit(expense);
+    setIsEditOpen(true);
+  };
+
+  const handleDeleteExpense = (expense) => {
+    setExpenseToDelete(expense);
+    setIsDeleteOpen(true);
+  };
+
   const handleExpenseCreated = (created) => {
     if (!created) {
       loadExpenses();
@@ -142,6 +158,33 @@ const Expenses = () => {
 
     // It was created successfully, but doesn't match current filters.
     loadExpenses();
+  };
+
+  const handleExpenseUpdated = (updated) => {
+    if (!updated) {
+      loadExpenses();
+      return;
+    }
+
+    setExpenses((previous) =>
+      (previous || []).map((expense) =>
+        expense.id === updated.id
+          ? {
+              ...updated,
+              project: updated.project || expense.project,
+            }
+          : expense
+      )
+    );
+  };
+
+  const handleExpenseDeleted = (deletedId) => {
+    if (!deletedId) {
+      loadExpenses();
+      return;
+    }
+
+    setExpenses((previous) => (previous || []).filter((expense) => expense.id !== deletedId));
   };
 
   return (
@@ -215,6 +258,34 @@ const Expenses = () => {
             onCreated={handleExpenseCreated}
           />
 
+          <EditExpenseDialog
+            open={isEditOpen}
+            onOpenChange={(open) => {
+              setIsEditOpen(open);
+              if (!open) {
+                setExpenseToEdit(null);
+              }
+            }}
+            session={session}
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            expense={expenseToEdit}
+            onUpdated={handleExpenseUpdated}
+          />
+
+          <DeleteExpenseDialog
+            open={isDeleteOpen}
+            onOpenChange={(open) => {
+              setIsDeleteOpen(open);
+              if (!open) {
+                setExpenseToDelete(null);
+              }
+            }}
+            session={session}
+            expense={expenseToDelete}
+            onDeleted={handleExpenseDeleted}
+          />
+
           <Card>
             <CardHeader className="space-y-1">
               <CardTitle className="text-base">Transactions</CardTitle>
@@ -250,6 +321,8 @@ const Expenses = () => {
                       ? "Try a different search term or clear filters."
                       : "Add your first expense to start tracking transactions."
                   }
+                  onEditExpense={handleEditExpense}
+                  onDeleteExpense={handleDeleteExpense}
                 />
               )}
             </CardContent>

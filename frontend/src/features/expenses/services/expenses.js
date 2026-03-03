@@ -1,13 +1,17 @@
 import { supabase } from "@/supabaseClient";
 
 export const EXPENSE_DEPARTMENTS = [
-  "Studio",
-  "Camera",
-  "Lighting",
-  "Audio",
-  "Editing",
+  "Marketing",
+  "Equipment",
+  "Labor",
+  "Studio / Venue",
+  "Wardrobe / Styling",
+  "Editing / Post",
+  "Software",
   "Travel",
-  "Props",
+  "Food",
+  "Distribution",
+  "Merch",
   "Other",
 ];
 
@@ -137,3 +141,92 @@ export const getExpenses = async (options = {}) => {
     source: "supabase",
   };
 };
+
+export const updateExpense = async (expenseId, payload, options = {}) => {
+  const userId = options.userId ?? payload?.userId;
+
+  if (!userId) {
+    throw new Error("You must be signed in to update an expense.");
+  }
+
+  if (!expenseId) {
+    throw new Error("Expense ID is required to update an expense.");
+  }
+
+  const updatePatch = {};
+
+  if (Object.prototype.hasOwnProperty.call(payload, "name")) {
+    updatePatch.name = payload.name?.trim() || "";
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "amount")) {
+    updatePatch.amount = payload.amount;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "department")) {
+    updatePatch.department = payload.department;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "category")) {
+    updatePatch.category = payload.category?.trim() || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "description")) {
+    updatePatch.description = payload.description?.trim() || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "expenseDate")) {
+    updatePatch.expense_date = payload.expenseDate;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "vendor")) {
+    updatePatch.vendor = payload.vendor?.trim() || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "receiptUrl")) {
+    updatePatch.receipt_url = payload.receiptUrl?.trim() || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "projectId")) {
+    updatePatch.project_id = payload.projectId;
+  }
+
+  const { data, error } = await supabase
+    .from("expenses")
+    .update(updatePatch)
+    .eq("id", expenseId)
+    .eq("user_id", userId)
+    .select(
+      "id, user_id, project_id, name, amount, department, category, description, expense_date, vendor, receipt_url, created_at, updated_at, projects ( id, name, currency )"
+    )
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    data: normalizeExpense(data),
+    source: "supabase",
+  };
+};
+
+export const deleteExpense = async (expenseId, options = {}) => {
+  if (!options.userId) {
+    throw new Error("You must be signed in to delete an expense.");
+  }
+
+  if (!expenseId) {
+    throw new Error("Expense ID is required to delete an expense.");
+  }
+
+  const { data, error } = await supabase
+    .from("expenses")
+    .delete()
+    .eq("id", expenseId)
+    .eq("user_id", options.userId)
+    .select("id")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    data: data ? { id: data.id } : null,
+    source: "supabase",
+  };
+};
+
