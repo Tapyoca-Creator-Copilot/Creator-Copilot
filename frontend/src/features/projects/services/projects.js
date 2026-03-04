@@ -1,4 +1,4 @@
-import { supabase } from "@/supabaseClient";
+import { apiFetch } from "@/lib/apiClient";
 
 const normalizeProject = (project) => {
   if (!project) {
@@ -9,13 +9,13 @@ const normalizeProject = (project) => {
     id: project.id,
     name: project.name,
     description: project.description,
-    budgetCeiling: Number(project.budgetCeiling ?? project.budget_ceiling ?? 0),
+    budgetCeiling: Number(project.budgetCeiling ?? 0),
     currency: project.currency,
-    projectType: project.projectType ?? project.project_type,
-    startDate: project.startDate ?? project.start_date,
-    endDate: project.endDate ?? project.end_date,
-    createdAt: project.createdAt ?? project.created_at,
-    userId: project.userId ?? project.user_id,
+    projectType: project.projectType,
+    startDate: project.startDate,
+    endDate: project.endDate,
+    createdAt: project.createdAt,
+    userId: project.userId,
   };
 };
 
@@ -24,38 +24,22 @@ export const createProject = async (payload, options = {}) => {
     throw new Error("You must be signed in to create a project.");
   }
 
-  const createdAt = payload.createdAt ?? new Date().toISOString();
-  const projectToCreate = {
-    ...payload,
-    createdAt,
-    userId: options.userId ?? payload.userId,
-  };
-
-  const { data, error } = await supabase
-    .from("projects")
-    .insert([
-      {
-        name: projectToCreate.name,
-        description: projectToCreate.description,
-        budget_ceiling: projectToCreate.budgetCeiling,
-        currency: projectToCreate.currency,
-        project_type: projectToCreate.projectType,
-        start_date: projectToCreate.startDate,
-        end_date: projectToCreate.endDate,
-        created_at: projectToCreate.createdAt,
-        user_id: projectToCreate.userId,
-      },
-    ])
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
+  const body = await apiFetch("/api/projects", {
+    method: "POST",
+    body: JSON.stringify({
+      name: payload.name,
+      description: payload.description,
+      budgetCeiling: payload.budgetCeiling,
+      currency: payload.currency,
+      projectType: payload.projectType,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
+    }),
+  });
 
   return {
-    data: normalizeProject(data),
-    source: "supabase",
+    data: normalizeProject(body.data),
+    source: "api",
   };
 };
 
@@ -64,19 +48,11 @@ export const getProjects = async (options = {}) => {
     throw new Error("You must be signed in to view projects.");
   }
 
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("user_id", options.userId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw error;
-  }
+  const body = await apiFetch("/api/projects");
 
   return {
-    data: (data || []).map(normalizeProject).filter(Boolean),
-    source: "supabase",
+    data: (body.data || []).map(normalizeProject).filter(Boolean),
+    source: "api",
   };
 };
 
@@ -85,26 +61,10 @@ export const getProjectById = async (projectId, options = {}) => {
     throw new Error("You must be signed in to view project details.");
   }
 
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", projectId)
-    .eq("user_id", options.userId)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      return {
-        data: null,
-        source: "supabase",
-      };
-    }
-
-    throw error;
-  }
+  const body = await apiFetch(`/api/projects/${projectId}`);
 
   return {
-    data: normalizeProject(data),
-    source: "supabase",
+    data: normalizeProject(body.data),
+    source: "api",
   };
 };

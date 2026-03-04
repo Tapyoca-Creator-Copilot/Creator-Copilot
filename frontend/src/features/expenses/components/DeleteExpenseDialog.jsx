@@ -15,7 +15,7 @@ const DeleteExpenseDialog = ({ open, onOpenChange, session, expense, onDeleted }
 
     try {
       setIsDeleting(true);
-      const result = await deleteExpense(expense.id, { userId: session?.user?.id });
+      const result = await deleteExpense(expense.id, { userId: session?.user?.id, projectId: expense.projectId });
       toast.success("Expense deleted");
       onDeleted?.(result?.data?.id || expense.id);
       onOpenChange?.(false);
