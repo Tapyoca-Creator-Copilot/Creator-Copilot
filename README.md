@@ -6,12 +6,14 @@ Creator Copilot is a React + Vite app with Supabase authentication and project m
 
 - `frontend/` — React application (routes, UI, auth, features)
 - `backend/` — backend assets (Supabase SQL schema/policies)
+- `ai-server/` — local Node server that powers the Tapy AI assistant (`/api/chat`)
 
 ## Prerequisites
 
 - Node.js 18+
 - npm 9+
 - Supabase project (for auth + database)
+- Google Generative AI API key (for the local AI assistant)
 
 ## 1) Frontend Setup
 
@@ -74,6 +76,39 @@ PORT=5001 python app.py
 ```
 
 Note: when running locally, you may want `FRONTEND_URL=http://localhost:5173` in `backend/.env`.
+
+### AI Server (Tapy Assistant)
+
+The in-app assistant calls `POST /api/chat`.
+
+Install dependencies:
+
+```bash
+cd ai-server
+npm install
+```
+
+Create `ai-server/.env`:
+
+```env
+# Required
+GOOGLE_GENERATIVE_AI_API_KEY=
+
+# Optional
+PORT=8787
+GEMINI_MODEL=gemini-3-flash-preview
+```
+
+Start the AI server:
+
+```bash
+cd ai-server
+npm run dev
+```
+
+By default it listens on `http://localhost:8787`.
+
+Note: in dev, the frontend proxies `/api/*` to `http://localhost:8787` via `frontend/vite.config.js`. If you change `PORT`, update the proxy target as well.
 
 ### Frontend (Vite)
 
