@@ -16,7 +16,7 @@
     --color-indigo-velvet: #552583ff;
     --color-indigo-velvet-hover: #6b2fa3ff;
     --color-linen: #fbf3ebff;
-    --color-linen-hover: #ede9e0ff;
+    --color-linen-hover: rgba(0, 0, 0, 0.030);
     --color-sage-green: #72993eff;
     --color-sage-green-hover: #5f8235ff;
 }
@@ -81,7 +81,7 @@ body {
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
-    --accent: #ede9e0ff;
+    --accent: rgba(0, 0, 0, 0.030);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
@@ -96,7 +96,7 @@ body {
     --sidebar-foreground: #272727ff;
     --sidebar-primary: oklch(0.205 0 0);
     --sidebar-primary-foreground: #fbf3ebff;
-    --sidebar-accent: #ede9e0ff;
+    --sidebar-accent: rgba(0, 0, 0, 0.030);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);

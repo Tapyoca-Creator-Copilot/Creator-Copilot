@@ -1,6 +1,5 @@
-import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Table({
   className,
@@ -23,7 +22,7 @@ function TableHeader({
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn("[&_tr]:border-b border-input", className)}
       {...props} />
   );
 }
@@ -35,7 +34,7 @@ function TableBody({
   return (
     <tbody
       data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
+      className={cn("[&_tr:last-child]:border-0 border-input", className)}
       {...props} />
   );
 }
@@ -47,7 +46,7 @@ function TableFooter({
   return (
     <tfoot
       data-slot="table-footer"
-      className={cn("bg-muted/50 border-t font-medium [&>tr]:last:border-b-0", className)}
+      className={cn("bg-muted/50 border-t border-input font-medium [&>tr]:last:border-b-0", className)}
       {...props} />
   );
 }
@@ -60,7 +59,7 @@ function TableRow({
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
+        "hover:bg-linen-hover data-[state=selected]:bg-muted border-b border-input/50 transition-colors",
         className
       )}
       {...props} />
@@ -110,12 +109,7 @@ function TableCaption({
 }
 
 export {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableCaption,
-}
+  Table, TableBody, TableCaption, TableCell, TableFooter,
+  TableHead, TableHeader, TableRow
+};
+

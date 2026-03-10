@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -79,7 +79,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {projects.map((project) => (
-                      <div key={project.id} className="rounded-md border p-3">
+                      <div key={project.id} className="rounded-md border border-input/50 p-3">
                         <div className="flex items-center justify-between gap-2">
                           <button
                             type="button"
