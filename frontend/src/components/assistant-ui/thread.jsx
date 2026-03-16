@@ -18,6 +18,7 @@ import {
   MessagePrimitive,
   SuggestionPrimitive,
   ThreadPrimitive,
+  useAuiState,
 } from "@assistant-ui/react";
 import {
   ArrowDownIcon,
@@ -32,17 +33,33 @@ import {
   RefreshCwIcon,
   SquareIcon,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 export const Thread = () => {
+  const viewportRef = useRef(null);
+  const messageCount = useAuiState((s) => s.thread.messages.length);
+  const isRunning = useAuiState((s) => s.thread.isRunning);
+
+  useEffect(() => {
+    const viewportEl = viewportRef.current;
+    if (!viewportEl) return;
+
+    viewportEl.scrollTo({
+      top: viewportEl.scrollHeight,
+      behavior: isRunning ? "auto" : "smooth",
+    });
+  }, [messageCount, isRunning]);
+
   return (
     <ThreadPrimitive.Root
-      className="aui-root aui-thread-root @container flex h-full flex-col bg-background"
+      className="aui-root aui-thread-root @container flex h-full min-h-0 flex-col bg-background"
       style={{
         ["--thread-max-width"]: "44rem",
       }}>
       <ThreadPrimitive.Viewport
-        turnAnchor="top"
-        className="aui-thread-viewport bg-linen relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4">
+        ref={viewportRef}
+        turnAnchor="bottom"
+        className="aui-thread-viewport bg-linen relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain scroll-smooth px-4 pt-4">
         <AuiIf condition={(s) => s.thread.isEmpty}>
           <ThreadWelcome />
         </AuiIf>
@@ -55,7 +72,7 @@ export const Thread = () => {
           }} />
 
         <ThreadPrimitive.ViewportFooter
-          className="aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl bg-background pb-4 md:pb-6">
+          className="aui-thread-viewport-footer sticky bottom-0 z-20 mx-auto mt-auto flex w-full max-w-(--thread-max-width) shrink-0 flex-col gap-4 overflow-visible rounded-t-3xl bg-linen pb-4 md:pb-6">
           <ThreadScrollToBottom />
           <Composer />
         </ThreadPrimitive.ViewportFooter>
@@ -69,8 +86,9 @@ const ThreadScrollToBottom = () => {
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
         tooltip="Scroll to bottom"
-        
-        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center border border-input/50 rounded-full p-4 disabled:invisible bg-linen hover:bg-linen-hover">
+        tooltipContentClassName="z-60 border border-input/60 bg-linen text-foreground opacity-100 shadow-md"
+        tooltipArrowClassName="z-60 bg-linen fill-linen"
+        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center border border-input/50 rounded-full bg-linen p-4 opacity-100 filter-none backdrop-blur-none disabled:invisible hover:bg-linen hover:opacity-100 hover:filter-none hover:backdrop-blur-none">
         <ArrowDownIcon />
       </TooltipIconButton>
     </ThreadPrimitive.ScrollToBottom>
@@ -202,7 +220,7 @@ const AssistantMessage = () => {
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-3 duration-150"
       data-role="assistant">
       <div
-        className="aui-assistant-message-content wrap-break-word px-2 text-foreground leading-relaxed">
+        className="aui-assistant-message-content break-words px-2 text-foreground leading-relaxed">
         <AuiIf
           condition={(s) =>
             s.thread.isRunning && s.message.isLast && s.message.parts.length === 0
@@ -218,7 +236,7 @@ const AssistantMessage = () => {
           condition ={(s) =>
             !s.thread.isRunning || !s.message.isLast || s.message.parts.length > 0
           }>
-          <div className="aui-assistant-message-parts wrap-break-word px-4 py-2.5 text-foreground rounded-2xl border border-input/50">
+          <div className="aui-assistant-message-parts break-words rounded-2xl border border-input/50 px-4 py-2.5 text-foreground">
             <MessagePrimitive.Parts
               components={{
                 Text: MarkdownText,
@@ -289,7 +307,7 @@ const UserMessage = () => {
       <UserMessageAttachments />
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
         <div
-          className="aui-user-message-content wrap-break-word rounded-2xl bg-chocolate hover:bg-chocolate-hover px-4 py-2.5 text-linen">
+          className="aui-user-message-content break-words rounded-2xl bg-chocolate px-4 py-2.5 text-linen hover:bg-chocolate-hover">
           <MessagePrimitive.Parts />
         </div>
         <div

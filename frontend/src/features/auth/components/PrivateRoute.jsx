@@ -1,39 +1,67 @@
 import { AssistantModal } from "@/components/assistant-ui/assistant-modal";
+import { AssistantStatePersistence } from "@/components/assistant-ui/assistant-state-persistence";
+import { SupabaseThreadListAdapter } from "@/components/assistant-ui/supabase-thread-list-adapter";
 import { UserAuth } from "@/features/auth/context/AuthContext";
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { AssistantChatTransport, useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import { useChat } from "@ai-sdk/react";
+import { AssistantRuntimeProvider, unstable_useRemoteThreadListRuntime, useAuiState } from "@assistant-ui/react";
+import {
+  AssistantChatTransport,
+  useAISDKRuntime,
+} from "@assistant-ui/react-ai-sdk";
+import { useMemo } from "react";
 import { Navigate } from "react-router-dom";
 
+const supabaseAdapter = new SupabaseThreadListAdapter();
 
+function RuntimeHook() {
+  const id = useAuiState((s) => s.threadListItem.id);
+  const transport = useMemo(() => new AssistantChatTransport({ api: "/api/chat" }), []);
+  const chat = useChat({ id, transport });
+  const runtime = useAISDKRuntime(chat);
+  transport.setRuntime(runtime);
+  return runtime;
+}
 
-
-function AssistantRuntimeGate({ children }) {
-  const runtime = useChatRuntime({
-    transport: new AssistantChatTransport({
-      api: "/api/chat",
-    }),
+function AssistantRuntimeGate({ children, userId }) {
+  const runtime = unstable_useRemoteThreadListRuntime({
+    runtimeHook: RuntimeHook,
+    adapter: supabaseAdapter,
+    allowNesting: true,
   });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
+      <AssistantStatePersistence userId={userId} />
       {children}
     </AssistantRuntimeProvider>
   );
 }
 
 const PrivateRoute = ({ children }) => {
-    const { session, isAuthLoading } = UserAuth();
+  const { session, isAuthLoading } = UserAuth();
 
-    if (isAuthLoading) {
-        return <div className="p-6 text-sm text-muted-foreground">Checking session...</div>;
-    }
+  if (isAuthLoading) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        Checking session...
+      </div>
+    );
+  }
 
-    return <>{session ? <>
-    <AssistantRuntimeGate>
-      <AssistantModal/>
-      {children}
-    </AssistantRuntimeGate>
-    </> : <Navigate to="/signin" replace />}</>;
+  return (
+    <>
+      {session ? (
+        <>
+          <AssistantRuntimeGate userId={session.user.id}>
+            <AssistantModal />
+            {children}
+          </AssistantRuntimeGate>
+        </>
+      ) : (
+        <Navigate to="/signin" replace />
+      )}
+    </>
+  );
 };
 
 export default PrivateRoute;

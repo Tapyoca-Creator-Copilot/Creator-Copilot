@@ -1,16 +1,25 @@
 "use client";;
-import { forwardRef } from "react";
 import { Slot } from "radix-ui";
+import { forwardRef } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const TooltipIconButton = forwardRef(({ children, tooltip, side = "bottom", className, ...rest }, ref) => {
+export const TooltipIconButton = forwardRef(({
+  children,
+  tooltip,
+  side = "bottom",
+  className,
+  tooltipContentClassName,
+  tooltipArrowClassName,
+  tooltipDisableAnimation,
+  ...rest
+}, ref) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -24,7 +33,14 @@ export const TooltipIconButton = forwardRef(({ children, tooltip, side = "bottom
           <span className="aui-sr-only sr-only">{tooltip}</span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side={side}>{tooltip}</TooltipContent>
+      <TooltipContent
+        side={side}
+        disableAnimation={tooltipDisableAnimation}
+        className={tooltipContentClassName}
+        arrowClassName={tooltipArrowClassName}
+      >
+        {tooltip}
+      </TooltipContent>
     </Tooltip>
   );
 });
