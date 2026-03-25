@@ -18,6 +18,9 @@ def create_app():
     if frontend_url:
         allowed_origins.append(frontend_url)
 
+    print("FRONTEND_URL:", frontend_url)
+    print("ALLOWED_ORIGINS:", allowed_origins)
+
     CORS(app, origins=allowed_origins)
 
     # --- Swagger / OpenAPI docs (http://localhost:5001/docs) ---
