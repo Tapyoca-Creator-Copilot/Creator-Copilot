@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 frontend/node_modules/
+backend/node_modules/
+ai-server/node_modules/
 
 # Environment files
 .env
@@ -9,9 +11,12 @@ frontend/.env
 frontend/.env.*
 backend/.env
 backend/.env.*
+ai-server/.env
+ai-server/.env.*
 !.env.example
 !frontend/.env.example
 !backend/.env.example
+!ai-server/.env.example
 
 # Build output
 dist/

@@ -1,20 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { UserAuth } from "@/features/auth/context/AuthContext";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { UserAuth } from "@/features/auth/context/AuthContext";
 
 import AddExpenseDialog from "@/features/expenses/components/AddExpenseDialog";
-import EditExpenseDialog from "@/features/expenses/components/EditExpenseDialog";
 import DeleteExpenseDialog from "@/features/expenses/components/DeleteExpenseDialog";
+import EditExpenseDialog from "@/features/expenses/components/EditExpenseDialog";
 import ExpenseFilters from "@/features/expenses/components/ExpenseFilters";
 import ExpensesTable from "@/features/expenses/components/ExpensesTable";
-import { getExpenses } from "@/features/expenses/services/expenses";
+import { getBudgetSummary, getExpenses } from "@/features/expenses/services/expenses";
 import { getProjects } from "@/features/projects/services/projects";
 
 const Expenses = () => {
@@ -26,6 +26,9 @@ const Expenses = () => {
 
   const [expenses, setExpenses] = useState([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
+
+  const [budgetSummary, setBudgetSummary] = useState(null);
+  const [isLoadingBudgetSummary, setIsLoadingBudgetSummary] = useState(false);
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
@@ -67,6 +70,24 @@ const Expenses = () => {
     setIsLoadingProjects(false);
   }, [session?.user?.id]);
 
+  const loadBudgetSummary = useCallback(async () => {
+    if (!session?.user?.id || !selectedProjectId) {
+      setBudgetSummary(null);
+      setIsLoadingBudgetSummary(false);
+      return;
+    }
+
+    setIsLoadingBudgetSummary(true);
+    try {
+      const summary = await getBudgetSummary(selectedProjectId);
+      setBudgetSummary(summary || null);
+    } catch {
+      setBudgetSummary(null);
+      toast.error("Unable to load budget summary. Please try again.");
+    }
+    setIsLoadingBudgetSummary(false);
+  }, [selectedProjectId, session?.user?.id]);
+
   const loadExpenses = useCallback(async () => {
     if (!session?.user?.id || !selectedProjectId) {
       setExpenses([]);
@@ -82,12 +103,13 @@ const Expenses = () => {
         department,
       });
       setExpenses(data || []);
+      loadBudgetSummary();
     } catch {
       setExpenses([]);
       toast.error("Unable to load expenses. Please try again.");
     }
     setIsLoadingExpenses(false);
-  }, [department, selectedProjectId, session?.user?.id]);
+  }, [department, loadBudgetSummary, selectedProjectId, session?.user?.id]);
 
   useEffect(() => {
     loadProjects();
@@ -96,6 +118,10 @@ const Expenses = () => {
   useEffect(() => {
     loadExpenses();
   }, [loadExpenses]);
+
+  useEffect(() => {
+    loadBudgetSummary();
+  }, [loadBudgetSummary]);
 
   const selectedProject = useMemo(
     () => projects.find((project) => project.id === selectedProjectId) || null,
@@ -126,6 +152,22 @@ const Expenses = () => {
 
   const isProjectGateActive = !selectedProjectId;
 
+  const formatBudget = (amount, currency) => {
+    if (typeof amount !== "number" || Number.isNaN(amount)) {
+      return "—";
+    }
+
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currency || "USD",
+        maximumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      return `${currency || "USD"} ${amount.toFixed(2)}`;
+    }
+  };
+
   const handleEditExpense = (expense) => {
     setExpenseToEdit(expense);
     setIsEditOpen(true);
@@ -153,6 +195,7 @@ const Expenses = () => {
         },
         ...(previous || []),
       ]);
+      loadBudgetSummary();
       return;
     }
 
@@ -176,6 +219,7 @@ const Expenses = () => {
           : expense
       )
     );
+    loadBudgetSummary();
   };
 
   const handleExpenseDeleted = (deletedId) => {
@@ -185,6 +229,7 @@ const Expenses = () => {
     }
 
     setExpenses((previous) => (previous || []).filter((expense) => expense.id !== deletedId));
+    loadBudgetSummary();
   };
 
   return (
@@ -296,6 +341,34 @@ const Expenses = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {!isProjectGateActive && (
+                <div className="rounded-md border border-input/50 p-4">
+                  {isLoadingBudgetSummary ? (
+                    <p className="text-sm text-muted-foreground">Loading budget summary...</p>
+                  ) : budgetSummary ? (
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Remaining:</span>{" "}
+                        <span
+                          className={budgetSummary.overBudget ? "font-semibold text-destructive" : "font-semibold"}>
+                          {formatBudget(budgetSummary.remaining, selectedProject?.currency)}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                        <span>
+                          Spent: {formatBudget(budgetSummary.totalSpent, selectedProject?.currency)}
+                        </span>
+                        <span>
+                          Budget: {formatBudget(budgetSummary.budgetCeiling, selectedProject?.currency)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No budget summary available.</p>
+                  )}
+                </div>
+              )}
+
               <ExpenseFilters
                 search={search}
                 onSearchChange={setSearch}
@@ -305,7 +378,7 @@ const Expenses = () => {
               />
 
               {isProjectGateActive ? (
-                <div className="rounded-md border p-6">
+                <div className="rounded-md border border-input/50 p-6">
                   <p className="font-medium">Select a project to get started</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Expenses are always associated with a project. Once selected, you’ll be able to search and filter by department.

@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { UserAuth } from "@/features/auth/context/AuthContext";
-import { getProjectById } from "@/features/projects/services/projects";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { UserAuth } from "@/features/auth/context/AuthContext";
+import { getProjectById } from "@/features/projects/services/projects";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();

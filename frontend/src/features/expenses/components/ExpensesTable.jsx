@@ -1,9 +1,8 @@
-import React from "react";
-import { IconDotsVertical } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
+import { IconDotsVertical } from "@tabler/icons-react";
 
 const formatCurrency = (value, currency = "USD") => {
   if (typeof value !== "number" || Number.isNaN(value)) {
@@ -65,7 +64,7 @@ const ExpensesTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="rounded-md border p-6">
+      <div className="rounded-md border border-input/50 p-6">
         <p className="text-sm text-muted-foreground">Loading expenses...</p>
       </div>
     );
@@ -73,7 +72,7 @@ const ExpensesTable = ({
 
   if (!expenses || expenses.length === 0) {
     return (
-      <div className="rounded-md border p-6">
+      <div className="rounded-md border border-input/50 p-6">
         <p className="font-medium">{emptyTitle}</p>
         <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
       </div>
@@ -89,12 +88,12 @@ const ExpensesTable = ({
         <p className="text-sm text-muted-foreground">
           Showing <span className="font-medium text-foreground">{expenses.length}</span> transactions
         </p>
-        <Badge variant="outline" className="text-muted-foreground">
+        <Badge variant="outline" className="text-muted-foreground border border-input/50">
           Total: <span className="ml-1 text-foreground">{formatCurrency(total, currency)}</span>
         </Badge>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border border-input/50">
         <Table>
           <TableHeader>
             <TableRow>
