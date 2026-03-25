@@ -18,6 +18,6 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ["creator-copilot-frontend.up.railway.app"],
+    allowedHosts: ["creator-copilot-frontend-production.up.railway.app"],
   },
 })
