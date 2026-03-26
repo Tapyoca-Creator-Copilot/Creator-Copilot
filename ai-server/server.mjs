@@ -8,14 +8,55 @@ import { convertToModelMessages, streamText } from "ai";
 
 const port = Number(process.env.PORT || 8787);
 const modelName = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
+const frontendUrl = process.env.FRONTEND_URL;
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin;
+  if (!origin) return;
+
+  const allowedOrigins = new Set(
+    [frontendUrl, "http://localhost:5173", "http://localhost:4173"].filter(Boolean),
+  );
+
+  if (!allowedOrigins.has(origin)) return;
+
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With",
+  );
+}
 
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
 
+    if (url.pathname === "/api/chat" || url.pathname === "/health") {
+      setCorsHeaders(req, res);
+      if (req.method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+    }
+
     if (req.method === "GET" && url.pathname === "/") {
       res.writeHead(200, { "Content-Type": "text/plain" });
       res.end("Hello from Gemini chat API!");
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          ok: true,
+          service: "ai-server",
+          model: modelName,
+        }),
+      );
       return;
     }
 

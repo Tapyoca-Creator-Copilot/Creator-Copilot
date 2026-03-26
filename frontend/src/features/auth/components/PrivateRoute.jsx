@@ -13,9 +13,12 @@ import { Navigate } from "react-router-dom";
 
 const supabaseAdapter = new SupabaseThreadListAdapter();
 
+const aiServerBaseUrl = import.meta.env.VITE_AI_SERVER_URL;
+const chatApiUrl = aiServerBaseUrl ? `${aiServerBaseUrl.replace(/\/$/, "")}/api/chat` : "/api/chat";
+
 function RuntimeHook() {
   const id = useAuiState((s) => s.threadListItem.id);
-  const transport = useMemo(() => new AssistantChatTransport({ api: "/api/chat" }), []);
+  const transport = useMemo(() => new AssistantChatTransport({ api: chatApiUrl }), []);
   const chat = useChat({ id, transport });
   const runtime = useAISDKRuntime(chat);
   transport.setRuntime(runtime);
