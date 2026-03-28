@@ -5,9 +5,15 @@ from docs.swagger import init_swagger
 from routes.health import health_bp
 from routes.expenses import expenses_bp
 from routes.projects import projects_bp
+from routes.chat import chat_bp
 
 # Local dev origins always allowed; production origin loaded from env var.
-_DEFAULT_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+_DEFAULT_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8787",
+    "http://127.0.0.1:8787",
+]
 
 
 def create_app():
@@ -30,6 +36,7 @@ def create_app():
     app.register_blueprint(health_bp)
     app.register_blueprint(expenses_bp)
     app.register_blueprint(projects_bp)
+    app.register_blueprint(chat_bp)
 
     return app
 

@@ -9,6 +9,28 @@ import { convertToModelMessages, streamText } from "ai";
 const port = Number(process.env.PORT || 8787);
 const modelName = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 const frontendUrl = process.env.FRONTEND_URL;
+const backendUrl = process.env.BACKEND_URL || "http://localhost:5002";
+
+async function fetchSystemPrompt(authHeader) {
+  if (!authHeader) return null;
+
+  try {
+    const res = await fetch(`${backendUrl}/api/chat/system-prompt`, {
+      headers: { Authorization: authHeader },
+    });
+
+    if (!res.ok) {
+      console.warn("Context fetch failed:", res.status);
+      return null;
+    }
+
+    const json = await res.json();
+    return json?.data?.systemPrompt ?? null;
+  } catch (err) {
+    console.warn("Context fetch error:", err.message);
+    return null;
+  }
+}
 
 function setCorsHeaders(req, res) {
   const origin = req.headers.origin;
@@ -82,8 +104,14 @@ const server = createServer(async (req, res) => {
 
       const { messages } = body;
 
+      // Fetch the user's financial context from the Flask backend
+      // and inject it as a system prompt so Gemini knows their data.
+      const authHeader = req.headers.authorization;
+      const systemPrompt = await fetchSystemPrompt(authHeader);
+
       const result = streamText({
         model: google(modelName),
+        system: systemPrompt || undefined,
         messages: await convertToModelMessages(messages ?? []),
       });
 
