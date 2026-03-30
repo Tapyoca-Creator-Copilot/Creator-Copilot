@@ -2,6 +2,7 @@ import { AssistantModal } from "@/components/assistant-ui/assistant-modal";
 import { AssistantStatePersistence } from "@/components/assistant-ui/assistant-state-persistence";
 import { SupabaseThreadListAdapter } from "@/components/assistant-ui/supabase-thread-list-adapter";
 import { UserAuth } from "@/features/auth/context/AuthContext";
+import { supabase } from "@/supabaseClient";
 import { useChat } from "@ai-sdk/react";
 import { AssistantRuntimeProvider, unstable_useRemoteThreadListRuntime, useAuiState } from "@assistant-ui/react";
 import {
@@ -18,7 +19,22 @@ const chatApiUrl = aiServerBaseUrl ? `${aiServerBaseUrl.replace(/\/$/, "")}/api/
 
 function RuntimeHook() {
   const id = useAuiState((s) => s.threadListItem.id);
-  const transport = useMemo(() => new AssistantChatTransport({ api: chatApiUrl }), []);
+  const transport = useMemo(
+    () =>
+      new AssistantChatTransport({
+        api: chatApiUrl,
+        // Adds the logged-in user's Supabase JWT to every chat request.
+        // The ai-server uses this Bearer token to authenticate against the Flask backend
+        // (`/api/chat/system-prompt`) and fetch the user-specific system prompt/context,
+        // so the assistant replies using the user's saved financial data.
+        headers: async () => {
+          const { data } = await supabase.auth.getSession();
+          const token = data?.session?.access_token ?? null;
+          return token ? { Authorization: `Bearer ${token}` } : {};
+        },
+      }),
+    [],
+  );
   const chat = useChat({ id, transport });
   const runtime = useAISDKRuntime(chat);
   transport.setRuntime(runtime);
