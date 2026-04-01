@@ -18,7 +18,7 @@ export const AssistantModal = () => {
 
   return (
     <AssistantModalPrimitive.Root>
-      <AssistantModalPrimitive.Anchor className="aui-root aui-modal-anchor fixed right-4 bottom-4 z-50 h-14 w-14">
+      <AssistantModalPrimitive.Anchor className="aui-root aui-modal-anchor fixed right-4 bottom-4 z-50 h-20 w-20">
         <AssistantModalPrimitive.Trigger asChild>
           <AssistantModalButton />
         </AssistantModalPrimitive.Trigger>
