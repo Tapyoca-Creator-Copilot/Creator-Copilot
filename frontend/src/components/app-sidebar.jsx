@@ -1,28 +1,20 @@
-import * as React from "react"
 import {
   IconCamera,
   IconChartBar,
   IconDashboard,
-  IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
+  IconFileImport,
   IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
-} from "@tabler/icons-react"
+  IconMoneybagMinus,
+  IconSettings
+} from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
-import { UserAuth } from "@/features/auth/context/AuthContext"
-import tapyocaLogo from "@/assets/tapyoca-logo.svg"
+
+import tapyocaLogo from "@/assets/tapyoca-logo-clean.svg";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -31,34 +23,35 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { UserAuth } from "@/features/auth/context/AuthContext";
 
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Overview",
       url: "/dashboard",
       icon: IconDashboard,
     },
     {
       title: "Expenses",
       url: "/expenses",
-      icon: IconListDetails,
+      icon: IconMoneybagMinus,
     },
     {
-      title: "Analytics",
+      title: "Graphs",
       url: "#",
       icon: IconChartBar,
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/projects",
       icon: IconFolder,
     },
     {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      title: "Import Data",
+      url: "/import-data",
+      icon: IconFileImport,
     },
   ],
   navClouds: [
@@ -115,33 +108,6 @@ const data = {
       url: "#",
       icon: IconSettings,
     },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
   ],
 }
 
@@ -170,10 +136,10 @@ export function AppSidebar({
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!h-auto data-[slot=sidebar-menu-button]:!p-1.5 data-[slot=sidebar-menu-button]:hover:!bg-transparent data-[slot=sidebar-menu-button]:hover:!text-sidebar-foreground data-[slot=sidebar-menu-button]:active:!bg-transparent data-[slot=sidebar-menu-button]:active:!text-sidebar-foreground">
               <a href="#" className="pointer-events-none flex w-full cursor-default select-none items-center justify-between gap-2">
                 <span className="min-w-0 flex flex-col">
-                  <span className="text-base font-semibold leading-tight">Creator Copilot</span>
-                  <span className="-mt-0.5 flex items-center gap-1 text-xs leading-none text-sidebar-foreground/80">
+                  <span className="text-xl font-medium leading-tight">Creator Copilot</span>
+                  <span className="p-0.5 flex items-center gap-1 text-xs leading-tight text-sidebar-foreground/80">
                     <span>powered by</span>
-                    <img src={tapyocaLogo} alt="Tapyoca" className="h-5 w-auto shrink-0" />
+                    <img src={tapyocaLogo} alt="Tapyoca" className="h-3 mt-1 w-auto shrink-0" />
                   </span>
                 </span>
               </a>
@@ -183,7 +149,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
