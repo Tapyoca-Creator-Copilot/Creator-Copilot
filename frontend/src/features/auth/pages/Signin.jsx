@@ -3,6 +3,7 @@ import tapyocaLogoClean from "@/assets/tapyoca-logo-clean.svg";
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
 import { useSignin } from '@/features/auth/hooks/useSignin';
 import { Eye, EyeClosed } from "lucide-react";
 import { Link } from 'react-router-dom';
@@ -17,6 +18,7 @@ const Signin = () => {
     handleEmailChange,
     handlePasswordChange,
     handleSignIn,
+    handleGoogleSignIn
   } = useSignin();
 
   return (
@@ -71,7 +73,9 @@ const Signin = () => {
           </div>
 
           <div className="space-y-4">
-            <Button className="w-full" type="submit" onClick={handleSignIn}>Sign In</Button>            <p className="mt-4 text-sm">
+            <Button className="w-full" type="submit" onClick={handleSignIn}>Sign In</Button>
+            <GoogleAuthButton onClick={handleGoogleSignIn}>Sign in with Google</GoogleAuthButton>
+            <p className="mt-4 text-sm">
               Don't have an account?
               <Link to="/signup" className="font-semibold text-chocolate hover:chocolate-hover ml-1">Sign up</Link>
             </p>

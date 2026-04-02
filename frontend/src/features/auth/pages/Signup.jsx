@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
 import { useSignup } from '@/features/auth/hooks/useSignup';
 import { CheckCircle2, Eye, EyeClosed, X } from "lucide-react";
 import { Link } from 'react-router-dom';
@@ -23,6 +24,7 @@ const Signup = () => {
     handlePasswordChange,
     handleOccupationChange,
     handleSignUp,
+    handleGoogleSignUp
   } = useSignup();
 
   return (
@@ -120,6 +122,7 @@ const Signup = () => {
               </div>
             )}
             <Button className="w-full" type="submit" onClick={handleSignUp}>Sign Up</Button>
+            <GoogleAuthButton onClick={handleGoogleSignUp}>Sign up with Google</GoogleAuthButton>
             <p className="mt-4 text-sm">
               Already have an account?
               <Link to="/signin" className="font-semibold text-chocolate hover:chocolate-hover ml-1">Sign in</Link>
