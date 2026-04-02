@@ -1,0 +1,23 @@
+tags:
+  - Chat
+summary: Get pre-built AI system prompt
+description: >
+  Returns a natural-language system prompt string containing the user's
+  full financial data. The AI server injects this as the system message
+  before sending the conversation to Gemini.
+security:
+  - BearerAuth: []
+responses:
+  200:
+    description: System prompt with financial context
+    schema:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            systemPrompt:
+              type: string
+              example: "You are Tapy, a financial copilot..."
+  401:
+    description: Missing or invalid token

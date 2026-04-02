@@ -1,0 +1,49 @@
+tags:
+  - Chat
+summary: Get user's financial context
+description: >
+  Returns all of the authenticated user's projects, expenses, budget summaries,
+  and department breakdowns as structured JSON. Used by the AI server to build
+  context-aware prompts.
+security:
+  - BearerAuth: []
+responses:
+  200:
+    description: Financial context
+    schema:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            projectCount:
+              type: integer
+              example: 2
+            projects:
+              type: array
+              items:
+                type: object
+                properties:
+                  projectId:
+                    type: string
+                  name:
+                    type: string
+                  budget:
+                    type: object
+                    properties:
+                      ceiling:
+                        type: number
+                      totalSpent:
+                        type: number
+                      remaining:
+                        type: number
+                      overBudget:
+                        type: boolean
+                  departmentBreakdown:
+                    type: object
+                  recentExpenses:
+                    type: array
+                    items:
+                      type: object
+  401:
+    description: Missing or invalid token
