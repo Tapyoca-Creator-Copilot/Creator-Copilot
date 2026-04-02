@@ -177,3 +177,21 @@ body {
   mix-blend-mode: soft-light;
   z-index: 0;
 }
+
+.auth-left-background {
+  background: var(--color-pearl-beige);
+}
+
+.auth-right-background {
+  background: var(--color-linen);
+}
+
+@media (max-width: 979px) {
+  .auth-left-background {
+    background: var(--color-pearl-beige);
+  }
+
+  .auth-right-background {
+    background: var(--color-linen);
+  }
+}

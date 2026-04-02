@@ -1,12 +1,12 @@
-import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import tapyIcon from "@/assets/tapy.png";
+import tapyocaLogoClean from "@/assets/tapyoca-logo-clean.svg";
+import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link } from 'react-router-dom';
-import { Eye, EyeClosed, CheckCircle2, X } from "lucide-react";
 import { useSignup } from '@/features/auth/hooks/useSignup';
+import { CheckCircle2, Eye, EyeClosed, X } from "lucide-react";
+import { Link } from 'react-router-dom';
 
 const Signup = () => {
   const {
@@ -22,18 +22,42 @@ const Signup = () => {
     handleEmailChange,
     handlePasswordChange,
     handleOccupationChange,
-    handleSignUp
+    handleSignUp,
   } = useSignup();
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <form onSubmit={handleSignUp} className="w-full max-w-md">
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>Fill in your details to create a new account</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+    <div className="min-h-screen min-[980px]:grid min-[980px]:grid-cols-[1fr_minmax(36rem,1fr)]">
+      <section className="auth-left-background flex items-center justify-center p-6 min-[980px]:p-10">
+        <div className="flex w-full max-w-lg flex-col items-center gap-2.5 text-center">
+          <img
+            src={tapyIcon}
+            alt="Creator Copilot icon"
+            className="h-28 w-28 min-[980px]:h-32 min-[980px]:w-32"
+          />
+          <h1 className="text-4xl font-semibold tracking-tight text-shadow-grey min-[980px]:text-5xl">
+            Creator Copilot
+          </h1>
+          <div className="flex items-center gap-2">
+            <p className="text-xl font-normal text-shadow-grey-hover min-[980px]:text-3xl">
+              powered by
+            </p>
+            <img
+              src={tapyocaLogoClean}
+              alt="Tapyoca"
+              className="mt-2.5 h-6 w-auto min-[980px]:h-7"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="auth-right-background flex items-center justify-center p-6 min-[980px]:p-12 min-[1200px]:p-16">
+        <form onSubmit={handleSignUp} className="w-full max-w-2xl space-y-8">
+          <div className="space-y-2">
+            <h2 className="text-4xl font-semibold tracking-tight">Sign Up</h2>
+            <p className="text-muted-foreground">Fill in your details to create a new account</p>
+          </div>
+
+          <div className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input id="name" placeholder="Enter your name" onChange={handleNameChange} />
@@ -87,10 +111,11 @@ const Signup = () => {
                 <p className="text-sm text-red-600">{occupationError}</p>
               )}
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col justify-between">
+          </div>
+
+          <div className="space-y-4">
             {error && (
-              <div className="w-full mb-4 p-3 text-sm text-red-600 rounded-md">
+              <div className="w-full p-3 text-sm text-red-600 rounded-md">
                 {error}
               </div>
             )}
@@ -99,9 +124,9 @@ const Signup = () => {
               Already have an account?
               <Link to="/signin" className="font-semibold text-chocolate hover:chocolate-hover ml-1">Sign in</Link>
             </p>
-          </CardFooter>
-        </Card>
-      </form>
+          </div>
+        </form>
+      </section>
     </div>
   )
 }
