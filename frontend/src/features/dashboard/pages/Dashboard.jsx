@@ -43,6 +43,13 @@ const Dashboard = () => {
                   <p className="font-semibold">Go to Expenses</p>
                   <p className="text-sm text-muted-foreground">Track transactions and filter by department.</p>
                 </button>
+                <button
+                  type="button"
+                  className="w-full rounded-md border border-input/50 p-3 text-left hover:bg-accent"
+                  onClick={() => navigate("/import-data")}>
+                  <p className="font-semibold">Import Files</p>
+                  <p className="text-sm text-muted-foreground">Upload CSV files and map them into expenses.</p>
+                </button>
               </CardContent>
             </Card>
           </div>
