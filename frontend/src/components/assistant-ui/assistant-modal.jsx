@@ -18,17 +18,17 @@ export const AssistantModal = () => {
 
   return (
     <AssistantModalPrimitive.Root>
-      <AssistantModalPrimitive.Anchor className="aui-root aui-modal-anchor fixed right-4 bottom-4 z-50 h-14 w-14">
+      <AssistantModalPrimitive.Anchor className="aui-root aui-modal-anchor fixed right-4 bottom-4 z-50 h-20 w-20 drop-shadow-lg drop-shadow-chocolate/60">
         <AssistantModalPrimitive.Trigger asChild>
           <AssistantModalButton />
         </AssistantModalPrimitive.Trigger>
       </AssistantModalPrimitive.Anchor>
       <AssistantModalPrimitive.Content
         sideOffset={16}
-        className={`aui-root aui-modal-content data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-1/2 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:zoom-out data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-1/2 data-[state=open]:slide-in-from-right-1/2 data-[state=open]:zoom-in z-50 h-[78vh] w-[92vw] min-w-[18rem] min-h-96 max-w-[96vw] max-h-[90vh] overflow-hidden overscroll-contain rounded-xl border bg-popover p-0 text-popover-foreground shadow-md outline-none transition-[width,height] duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in [&>.aui-thread-root]:bg-inherit [&>.aui-thread-root_.aui-thread-viewport-footer]:bg-inherit ${MODAL_SIZE_CLASSES[chatSize]}`}>
+        className={`aui-root aui-modal-content data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-1/2 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:zoom-out data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-1/2 data-[state=open]:slide-in-from-right-1/2 data-[state=open]:zoom-in z-50 h-[78vh] w-[92vw] min-w-[18rem] min-h-96 max-w-[96vw] max-h-[90vh] overflow-hidden overscroll-contain rounded-xl border border-black/5 bg-popover p-0 text-popover-foreground transition-[width,height] duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in [&>.aui-thread-root]:bg-inherit [&>.aui-thread-root_.aui-thread-viewport-footer]:bg-inherit ${MODAL_SIZE_CLASSES[chatSize]}`}>
         <div className="flex h-full min-h-0 flex-col">
-          <div className="flex h-11 shrink-0 items-center justify-between border-b px-3">
-            <span className="text-xs font-medium text-muted-foreground">Chat Size</span>
+          <div className="flex h-11 shrink-0 items-center justify-between border-b border-black/5 px-3">
+            <span className="text-xs font-medium">Chat Size</span>
             <div className="flex items-center gap-1">
               <Button
                 type="button"
@@ -71,7 +71,7 @@ export const AssistantModal = () => {
 
 const ThreadHistorySidebar = () => {
   return (
-    <div className="min-h-0 border-r p-2">
+    <div className="min-h-0 border-r border-black/5 p-2">
       <ThreadListPrimitive.Root className="flex h-full flex-col gap-2">
         <ThreadListPrimitive.New asChild>
           <Button variant="outline" className="w-full justify-start bg-shadow-grey text-linen text-sm hover:bg-shadow-grey-hover hover:text-linen">

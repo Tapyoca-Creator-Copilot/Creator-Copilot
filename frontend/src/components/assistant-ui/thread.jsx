@@ -86,7 +86,7 @@ const ThreadScrollToBottom = () => {
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
         tooltip="Scroll to bottom"
-        tooltipContentClassName="z-60 border border-input/60 bg-linen text-foreground opacity-100 shadow-md"
+        tooltipContentClassName="z-60 border border-input/60 bg-linen text-foreground opacity-100"
         tooltipArrowClassName="z-60 bg-linen fill-linen"
         className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center border border-input/50 rounded-full bg-linen p-4 opacity-100 filter-none backdrop-blur-none disabled:invisible hover:bg-linen hover:opacity-100 hover:filter-none hover:backdrop-blur-none">
         <ArrowDownIcon />
@@ -154,7 +154,7 @@ const Composer = () => {
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
       <ComposerPrimitive.AttachmentDropzone
-        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-input bg-linen px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-black/5 bg-linen px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
           placeholder="Send a message..."
@@ -164,6 +164,7 @@ const Composer = () => {
           aria-label="Message input" />
         <ComposerAction />
       </ComposerPrimitive.AttachmentDropzone>
+      <p className="mt-1 px-4 text-[11px] text-muted-foreground">Creator Copilot uses AI to provide insights and assistance. AI can make mistakes.</p>
     </ComposerPrimitive.Root>
   );
 };
@@ -220,7 +221,7 @@ const AssistantMessage = () => {
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-3 duration-150"
       data-role="assistant">
       <div
-        className="aui-assistant-message-content break-words px-2 text-foreground leading-relaxed">
+        className="aui-assistant-message-content wrap-break-words px-2 text-foreground leading-relaxed">
         <AuiIf
           condition={(s) =>
             s.thread.isRunning && s.message.isLast && s.message.parts.length === 0
@@ -236,7 +237,7 @@ const AssistantMessage = () => {
           condition ={(s) =>
             !s.thread.isRunning || !s.message.isLast || s.message.parts.length > 0
           }>
-          <div className="aui-assistant-message-parts break-words rounded-2xl border border-input/50 px-4 py-2.5 text-foreground">
+          <div className="aui-assistant-message-parts wrap-break-words rounded-2xl border border-input/50 px-4 py-2.5 text-foreground">
             <MessagePrimitive.Parts
               components={{
                 Text: MarkdownText,
@@ -307,7 +308,7 @@ const UserMessage = () => {
       <UserMessageAttachments />
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
         <div
-          className="aui-user-message-content break-words rounded-2xl bg-chocolate px-4 py-2.5 text-linen hover:bg-chocolate-hover">
+          className="aui-user-message-content wrap-break-words rounded-2xl bg-chocolate px-4 py-2.5 text-linen hover:bg-chocolate-hover">
           <MessagePrimitive.Parts />
         </div>
         <div

@@ -19,14 +19,11 @@ const chatApiUrl = aiServerBaseUrl ? `${aiServerBaseUrl.replace(/\/$/, "")}/api/
 
 function RuntimeHook() {
   const id = useAuiState((s) => s.threadListItem.id);
+  // Connects the AI chat to the backend API and includes the user's auth token for secure requests.
   const transport = useMemo(
     () =>
       new AssistantChatTransport({
         api: chatApiUrl,
-        // Adds the logged-in user's Supabase JWT to every chat request.
-        // The ai-server uses this Bearer token to authenticate against the Flask backend
-        // (`/api/chat/system-prompt`) and fetch the user-specific system prompt/context,
-        // so the assistant replies using the user's saved financial data.
         headers: async () => {
           const { data } = await supabase.auth.getSession();
           const token = data?.session?.access_token ?? null;

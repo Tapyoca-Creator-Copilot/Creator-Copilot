@@ -71,31 +71,31 @@ body {
     --radius: 0.625rem;
     --background: #f4e9c1ff;
     --foreground: #272727ff;
-    --card: #fbf3ebff;
+    --card: #FBF3EB;
     --card-foreground: #272727ff;
-    --popover: #fbf3ebff;
+    --popover: #FBF3EB;
     --popover-foreground: #272727ff;
     --primary: rgb(100, 100, 90);
-    --primary-foreground: #fbf3ebff;
+    --primary-foreground: #FBF3EB;
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
     --accent: rgba(0, 0, 0, 0.030);
     --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
+    --destructive: oklch(0.51 0.19 28);
     --border: oklch(0.922 0 0);
     --input: rgb(200, 190, 180);
-    --ring: rgb(200, 190, 180);
+    --ring: rgba(0, 0, 0, 0.1);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: #fbf3ebff;
+    --sidebar: #FBF3EB;
     --sidebar-foreground: #272727ff;
     --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: #fbf3ebff;
+    --sidebar-primary-foreground: #FBF3EB;
     --sidebar-accent: rgba(0, 0, 0, 0.030);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
@@ -143,4 +143,55 @@ body {
   body {
     @apply bg-background text-foreground;
     }
+}
+
+.blur-background {
+  position: relative;
+  background-color: #FBF3EB;
+  background-image:
+    linear-gradient(90deg, var(--sidebar) 0%, var(--sidebar) .05%, transparent 16%),
+    radial-gradient(at 95% 70%, #F4E9C1 0%, transparent 60%),
+    radial-gradient(at 45% 35%, #FBF3EB 0%, #F4E9C1 52%, transparent 88%),
+    radial-gradient(at 5% 90%, #FBF3EB 0%, transparent 50%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  min-height: 100svh;
+  min-height: 100vh;
+}
+
+.blur-background > * {
+  position: relative;
+  z-index: 1;
+}
+
+.blur-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  mix-blend-mode: soft-light;
+  z-index: 0;
+}
+
+.auth-left-background {
+  background: var(--color-pearl-beige);
+}
+
+.auth-right-background {
+  background: var(--color-linen);
+}
+
+@media (max-width: 979px) {
+  .auth-left-background {
+    background: var(--color-pearl-beige);
+  }
+
+  .auth-right-background {
+    background: var(--color-linen);
+  }
 }

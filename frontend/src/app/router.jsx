@@ -5,8 +5,10 @@ import Signin from "@/features/auth/pages/Signin";
 import Signup from "@/features/auth/pages/Signup";
 import Dashboard from "@/features/dashboard/pages/Dashboard";
 import Expenses from "@/features/dashboard/pages/Expenses";
+import ImportDataPage from "@/features/import-data/pages/ImportDataPage";
 import CreateProjectPage from "@/features/projects/pages/CreateProjectPage";
 import ProjectDetailPage from "@/features/projects/pages/ProjectDetailPage";
+import ProjectsPage from "@/features/projects/pages/ProjectsPage";
 
 export const appRouter = createBrowserRouter([
   { path: "/", element: <Signup /> },
@@ -17,6 +19,14 @@ export const appRouter = createBrowserRouter([
     element: (
       <PrivateRoute>
         <Dashboard />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/projects",
+    element: (
+      <PrivateRoute>
+        <ProjectsPage />
       </PrivateRoute>
     ),
   },
@@ -41,6 +51,14 @@ export const appRouter = createBrowserRouter([
     element: (
       <PrivateRoute>
         <Expenses />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/import-data",
+    element: (
+      <PrivateRoute>
+        <ImportDataPage />
       </PrivateRoute>
     ),
   },

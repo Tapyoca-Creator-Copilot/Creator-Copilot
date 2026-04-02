@@ -1,6 +1,6 @@
+import { UserAuth } from '@/features/auth/context/AuthContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '@/features/auth/context/AuthContext';
 
 export const useSignin = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ export const useSignin = () => {
   const [loading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signInUser } = UserAuth();
+  const { signInUser, signInWithGoogle } = UserAuth();
   const navigate = useNavigate();
 
   const handleEmailChange = (e) => {
@@ -35,6 +35,15 @@ export const useSignin = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError("");
+    const { error: googleError } = await signInWithGoogle();
+
+    if (googleError) {
+      setError("Unable to continue with Google. Please try again.");
+    }
+  };
+
   return {
     email,
     password,
@@ -44,6 +53,7 @@ export const useSignin = () => {
     setShowPassword,
     handleEmailChange,
     handlePasswordChange,
-    handleSignIn
+    handleSignIn,
+    handleGoogleSignIn
   };
 };

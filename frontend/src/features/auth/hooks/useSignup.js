@@ -1,7 +1,7 @@
+import { UserAuth } from '@/features/auth/context/AuthContext';
+import { getPasswordValidations, validateEmail, validateName, validateOccupation, validatePassword } from '@/utils/validations';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '@/features/auth/context/AuthContext';
-import { validateName, validateEmail, validatePassword, validateOccupation, getPasswordValidations } from '@/utils/validations';
 
 export const useSignup = () => {
   const [name, setName] = useState('');
@@ -16,7 +16,7 @@ export const useSignup = () => {
   const [occupationError, setOccupationError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signUpNewUser } = UserAuth();
+  const { signUpNewUser, signInWithGoogle } = UserAuth();
   const navigate = useNavigate();
 
   const passwordValidations = getPasswordValidations(password);
@@ -108,6 +108,15 @@ export const useSignup = () => {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    setError("");
+    const { error: googleError } = await signInWithGoogle();
+
+    if (googleError) {
+      setError("Unable to continue with Google. Please try again.");
+    }
+  };
+
   return {
     name,
     email,
@@ -126,6 +135,7 @@ export const useSignup = () => {
     handleEmailChange,
     handlePasswordChange,
     handleOccupationChange,
-    handleSignUp
+    handleSignUp,
+    handleGoogleSignUp
   };
 };

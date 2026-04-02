@@ -1,5 +1,5 @@
-import { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/supabaseClient';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext()
 
@@ -45,6 +45,22 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    const signInWithGoogle = async () => {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: `${window.location.origin}/dashboard`,
+            },
+        });
+
+        if (error) {
+            console.error("Error signing in with Google:", error);
+            return { success: false, error };
+        }
+
+        return { success: true, data };
+    };
+
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
@@ -70,7 +86,7 @@ export const AuthContextProvider = ({ children }) => {
     };
  
     return (
-        <AuthContext.Provider value={{session, isAuthLoading, signUpNewUser, signInUser, signOutUser}}>
+        <AuthContext.Provider value={{session, isAuthLoading, signUpNewUser, signInUser, signInWithGoogle, signOutUser}}>
             {children}
         </AuthContext.Provider>
     )
