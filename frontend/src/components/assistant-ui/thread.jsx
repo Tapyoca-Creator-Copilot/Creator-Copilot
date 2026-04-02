@@ -221,7 +221,7 @@ const AssistantMessage = () => {
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-3 duration-150"
       data-role="assistant">
       <div
-        className="aui-assistant-message-content break-words px-2 text-foreground leading-relaxed">
+        className="aui-assistant-message-content wrap-break-words px-2 text-foreground leading-relaxed">
         <AuiIf
           condition={(s) =>
             s.thread.isRunning && s.message.isLast && s.message.parts.length === 0
@@ -237,7 +237,7 @@ const AssistantMessage = () => {
           condition ={(s) =>
             !s.thread.isRunning || !s.message.isLast || s.message.parts.length > 0
           }>
-          <div className="aui-assistant-message-parts break-words rounded-2xl border border-input/50 px-4 py-2.5 text-foreground">
+          <div className="aui-assistant-message-parts wrap-break-words rounded-2xl border border-input/50 px-4 py-2.5 text-foreground">
             <MessagePrimitive.Parts
               components={{
                 Text: MarkdownText,
@@ -308,7 +308,7 @@ const UserMessage = () => {
       <UserMessageAttachments />
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
         <div
-          className="aui-user-message-content break-words rounded-2xl bg-chocolate px-4 py-2.5 text-linen hover:bg-chocolate-hover">
+          className="aui-user-message-content wrap-break-words rounded-2xl bg-chocolate px-4 py-2.5 text-linen hover:bg-chocolate-hover">
           <MessagePrimitive.Parts />
         </div>
         <div
