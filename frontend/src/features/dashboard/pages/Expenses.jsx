@@ -248,7 +248,7 @@ const Expenses = () => {
 
           <Card>
             <CardHeader className="space-y-1">
-              <CardTitle className="text-base">Project</CardTitle>
+              <CardTitle>Project</CardTitle>
               <CardDescription>Select a project to view and add expenses.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -283,6 +283,13 @@ const Expenses = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={projects.length === 0 || !selectedProjectId}
+                >
+                  Export CSV
+                </Button>
                 <Button
                   type="button"
                   onClick={() => setIsAddOpen(true)}
@@ -330,10 +337,55 @@ const Expenses = () => {
             expense={expenseToDelete}
             onDeleted={handleExpenseDeleted}
           />
+          {!isProjectGateActive &&
+            (isLoadingBudgetSummary ? (
+              <Card>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Loading budget summary...</p>
+                </CardContent>
+              </Card>
+            ) : budgetSummary ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {/*Budget Ceiling Card*/}
+                <Card>
+                  <CardContent className="px-6">
+                    <p className="text-sm text-muted-foreground">Budget</p>
+                    <p className="mt-1 text-xl font-semibold text-foreground">
+                      {formatBudget(budgetSummary.budgetCeiling, selectedProject?.currency)}
+                    </p>
+                  </CardContent>
+                </Card>
+                {/*Spent Card*/}
+                <Card>
+                  <CardContent className="px-6">
+                    <p className="text-sm text-muted-foreground">Spent</p>
+                    <p className="mt-1 text-xl font-semibold text-foreground">
+                      {formatBudget(budgetSummary.totalSpent, selectedProject?.currency)}
+                    </p>
+                  </CardContent>
+                </Card>
+                {/*Remaining Budget Card*/}
+                <Card>
+                  <CardContent className="px-6">
+                    <p className="text-sm text-muted-foreground">Remaining</p>
+                    <p
+                      className={`mt-1 text-xl font-semibold ${budgetSummary.overBudget ? "text-destructive" : "text-foreground"}`}>
+                      {formatBudget(budgetSummary.remaining, selectedProject?.currency)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">No budget summary available.</p>
+                </CardContent>
+              </Card>
+            ))}
 
           <Card>
             <CardHeader className="space-y-1">
-              <CardTitle className="text-base">Transactions</CardTitle>
+              <CardTitle>Transactions</CardTitle>
               <CardDescription>
                 {isProjectGateActive
                   ? "Select a project to view transactions."
@@ -341,34 +393,6 @@ const Expenses = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!isProjectGateActive && (
-                <div className="rounded-md border border-input/50 p-4">
-                  {isLoadingBudgetSummary ? (
-                    <p className="text-sm text-muted-foreground">Loading budget summary...</p>
-                  ) : budgetSummary ? (
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Remaining:</span>{" "}
-                        <span
-                          className={budgetSummary.overBudget ? "font-semibold text-destructive" : "font-semibold"}>
-                          {formatBudget(budgetSummary.remaining, selectedProject?.currency)}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                        <span>
-                          Spent: {formatBudget(budgetSummary.totalSpent, selectedProject?.currency)}
-                        </span>
-                        <span>
-                          Budget: {formatBudget(budgetSummary.budgetCeiling, selectedProject?.currency)}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No budget summary available.</p>
-                  )}
-                </div>
-              )}
-
               <ExpenseFilters
                 search={search}
                 onSearchChange={setSearch}
