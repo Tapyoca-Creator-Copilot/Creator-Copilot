@@ -64,7 +64,7 @@ const ExpensesTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="rounded-md border border-input/50 p-6">
+      <div className="rounded-lg border border-black/5 bg-card p-6">
         <p className="text-sm text-muted-foreground">Loading expenses...</p>
       </div>
     );
@@ -72,9 +72,9 @@ const ExpensesTable = ({
 
   if (!expenses || expenses.length === 0) {
     return (
-      <div className="rounded-md border border-input/50 p-6">
-        <p className="font-medium">{emptyTitle}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
+      <div className="rounded-lg border border-black/5 bg-card p-8 text-center">
+        <p className="font-semibold text-foreground">{emptyTitle}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{emptyDescription}</p>
       </div>
     );
   }
@@ -83,57 +83,52 @@ const ExpensesTable = ({
   const total = expenses.reduce((sum, expense) => sum + (Number(expense?.amount) || 0), 0);
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">
-          Showing <span className="font-medium text-foreground">{expenses.length}</span> transactions
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">
+          Showing <span className="font-semibold text-foreground">{expenses.length}</span> transaction{expenses.length !== 1 ? 's' : ''}
         </p>
-        <Badge variant="outline" className="text-muted-foreground border border-input/50">
-          Total: <span className="ml-1 text-foreground">{formatCurrency(total, currency)}</span>
-        </Badge>
+        <p className="text-sm font-medium text-foreground">
+          Total: <span className="font-semibold">{formatCurrency(total, currency)}</span>
+        </p>
       </div>
 
-      <div className="rounded-md border border-input/50">
+      <div className="rounded-lg border border-black/5 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-30">Date</TableHead>
-              <TableHead>Expense</TableHead>
-              <TableHead className="hidden lg:table-cell">Project</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="hidden md:table-cell">Vendor</TableHead>
-              <TableHead className="hidden xl:table-cell">Notes</TableHead>
-              <TableHead className="w-15 text-right">Actions</TableHead>
+            <TableRow className="bg-accent border-black/5">
+              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Date</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Expense</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Department</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Amount</TableHead>
+              <TableHead className="hidden md:table-cell px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Vendor</TableHead>
+              <TableHead className="hidden xl:table-cell px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Notes</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-right flex-1">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="align-top">{formatDate(expense.expenseDate)}</TableCell>
-                <TableCell className="align-top">
-                  <div className="font-medium">{expense.name}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground lg:hidden">
-                    {expense?.project?.name || "—"}
-                  </div>
+              <TableRow key={expense.id} className="border-black/5 hover:bg-accent/50 transition-colors">
+                <TableCell className="px-6 py-4 text-sm text-foreground flex-1">{formatDate(expense.expenseDate)}</TableCell>
+                <TableCell className="px-6 py-4 flex-1">
+                  <div className="font-medium text-foreground">{expense.name}</div>
                 </TableCell>
-                <TableCell className="hidden lg:table-cell align-top">{expense?.project?.name || "—"}</TableCell>
-                <TableCell className="align-top">
-                  <Badge variant="outline" className="text-muted-foreground">
+                <TableCell className="px-6 py-4 flex-1">
+                  <Badge variant="secondary" className="font-medium">
                     {expense.department}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right align-top">
+                <TableCell className="px-6 py-4 text-sm font-semibold text-foreground flex-1">
                   {formatCurrency(Number(expense.amount), expense?.project?.currency || currency)}
                 </TableCell>
-                <TableCell className="hidden md:table-cell align-top">{expense.vendor || "—"}</TableCell>
-                <TableCell className="hidden xl:table-cell align-top text-muted-foreground">
+                <TableCell className="hidden md:table-cell px-6 py-4 text-sm text-foreground flex-1">{expense.vendor || "—"}</TableCell>
+                <TableCell className="hidden xl:table-cell px-6 py-4 text-sm text-muted-foreground flex-1">
                   {buildNotesPreview(expense.description)}
                 </TableCell>
-                <TableCell className="text-right align-top">
+                <TableCell className="px-6 py-4 text-right flex-1">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-sm" aria-label="Expense actions">
+                      <Button variant="ghost" size="icon-sm" aria-label="Expense actions" className="hover:bg-foreground/10">
                         <IconDotsVertical className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
