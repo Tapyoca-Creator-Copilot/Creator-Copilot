@@ -7,9 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
 import { useSignup } from '@/features/auth/hooks/useSignup';
 import { CheckCircle2, Eye, EyeClosed, X } from "lucide-react";
+import { useRef } from "react";
 import { Link } from 'react-router-dom';
 
 const Signup = () => {
+  const passwordInputRef = useRef(null);
+
   const {
     error,
     nameError,
@@ -26,6 +29,13 @@ const Signup = () => {
     handleSignUp,
     handleGoogleSignUp
   } = useSignup();
+
+  const handleEmailKeyDown = (event) => {
+    if (event.key !== "Enter") return;
+
+    event.preventDefault();
+    passwordInputRef.current?.focus();
+  };
 
   return (
     <div className="min-h-screen min-[980px]:grid min-[980px]:grid-cols-[1fr_minmax(36rem,1fr)]">
@@ -69,7 +79,7 @@ const Signup = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter your email" onChange={handleEmailChange} />
+              <Input id="email" type="email" placeholder="Enter your email" onChange={handleEmailChange} onKeyDown={handleEmailKeyDown} />
               {emailError && (
                 <p className="text-sm text-red-600">{emailError}</p>
               )}
@@ -77,7 +87,7 @@ const Signup = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input id="password" type={showPassword ? "text" : "password"}placeholder="••••••••" onChange={handlePasswordChange} />
+                <Input id="password" ref={passwordInputRef} type={showPassword ? "text" : "password"} placeholder="••••••••" onChange={handlePasswordChange} />
                 <div className="space-y-1 mt-2">
                   {passwordValidations.map((validation, index) => (
                     <div
@@ -90,7 +100,7 @@ const Signup = () => {
                     </div>
                   ))}
                 </div>
-                <Button type="button" className="absolute top-0 right-0 px-3 text-primary hover:bg-transparent hover:text-primary" variant="ghost" onClick={() => setShowPassword(!showPassword)}>
+                <Button type="button" className="absolute top-0 right-0 px-3 text-primary hover:bg-transparent hover:text-primary bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                 </Button>
               </div>
@@ -121,7 +131,7 @@ const Signup = () => {
                 {error}
               </div>
             )}
-            <Button className="w-full" type="submit" onClick={handleSignUp}>Sign Up</Button>
+            <Button className="w-full" type="submit">Sign Up</Button>
             <GoogleAuthButton onClick={handleGoogleSignUp}>Sign up with Google</GoogleAuthButton>
             <p className="mt-4 text-sm">
               Already have an account?
