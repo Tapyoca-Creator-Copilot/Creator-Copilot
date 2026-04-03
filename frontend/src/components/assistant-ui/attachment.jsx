@@ -2,23 +2,23 @@
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
-  AttachmentPrimitive,
-  ComposerPrimitive,
-  MessagePrimitive,
-  useAui,
-  useAuiState,
+    AttachmentPrimitive,
+    ComposerPrimitive,
+    MessagePrimitive,
+    useAui,
+    useAuiState,
 } from "@assistant-ui/react";
 import { FileText, PlusIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -167,7 +167,7 @@ const AttachmentRemove = () => {
     <AttachmentPrimitive.Remove asChild>
       <TooltipIconButton
         tooltip="Remove file"
-        className="aui-attachment-tile-remove absolute top-1.5 right-1.5 size-3.5 rounded-full bg-white text-muted-foreground opacity-100 shadow-sm hover:bg-white! [&_svg]:text-black hover:[&_svg]:text-destructive"
+        className="aui-attachment-tile-remove absolute top-1.5 right-1.5 size-3.5 rounded-full bg-card text-muted-foreground opacity-100 shadow-sm hover:bg-muted [&_svg]:text-foreground hover:[&_svg]:text-destructive dark:hover:[&_svg]:text-destructive"
         side="top">
         <XIcon className="aui-attachment-remove-icon size-3 dark:stroke-[2.5px]" />
       </TooltipIconButton>

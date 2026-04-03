@@ -1,7 +1,7 @@
 import {
-  ComposerAddAttachment,
-  ComposerAttachments,
-  UserMessageAttachments,
+    ComposerAddAttachment,
+    ComposerAttachments,
+    UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
@@ -9,29 +9,29 @@ import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  ActionBarMorePrimitive,
-  ActionBarPrimitive,
-  AuiIf,
-  BranchPickerPrimitive,
-  ComposerPrimitive,
-  ErrorPrimitive,
-  MessagePrimitive,
-  SuggestionPrimitive,
-  ThreadPrimitive,
-  useAuiState,
+    ActionBarMorePrimitive,
+    ActionBarPrimitive,
+    AuiIf,
+    BranchPickerPrimitive,
+    ComposerPrimitive,
+    ErrorPrimitive,
+    MessagePrimitive,
+    SuggestionPrimitive,
+    ThreadPrimitive,
+    useAuiState,
 } from "@assistant-ui/react";
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CheckIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CopyIcon,
-  DownloadIcon,
-  MoreHorizontalIcon,
-  PencilIcon,
-  RefreshCwIcon,
-  SquareIcon,
+    ArrowDownIcon,
+    ArrowUpIcon,
+    CheckIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    CopyIcon,
+    DownloadIcon,
+    MoreHorizontalIcon,
+    PencilIcon,
+    RefreshCwIcon,
+    SquareIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -59,7 +59,7 @@ export const Thread = () => {
       <ThreadPrimitive.Viewport
         ref={viewportRef}
         turnAnchor="bottom"
-        className="aui-thread-viewport bg-linen relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain scroll-smooth px-4 pt-4">
+        className="aui-thread-viewport bg-popover relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain scroll-smooth px-4 pt-4">
         <AuiIf condition={(s) => s.thread.isEmpty}>
           <ThreadWelcome />
         </AuiIf>
@@ -72,7 +72,7 @@ export const Thread = () => {
           }} />
 
         <ThreadPrimitive.ViewportFooter
-          className="aui-thread-viewport-footer sticky bottom-0 z-20 mx-auto mt-auto flex w-full max-w-(--thread-max-width) shrink-0 flex-col gap-4 overflow-visible rounded-t-3xl bg-linen pb-4 md:pb-6">
+          className="aui-thread-viewport-footer sticky bottom-0 z-20 mx-auto mt-auto flex w-full max-w-(--thread-max-width) shrink-0 flex-col gap-4 overflow-visible rounded-t-3xl bg-popover pb-4 md:pb-6">
           <ThreadScrollToBottom />
           <Composer />
         </ThreadPrimitive.ViewportFooter>
@@ -86,9 +86,9 @@ const ThreadScrollToBottom = () => {
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
         tooltip="Scroll to bottom"
-        tooltipContentClassName="z-60 border border-input/60 bg-linen text-foreground opacity-100"
-        tooltipArrowClassName="z-60 bg-linen fill-linen"
-        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center border border-input/50 rounded-full bg-linen p-4 opacity-100 filter-none backdrop-blur-none disabled:invisible hover:bg-linen hover:opacity-100 hover:filter-none hover:backdrop-blur-none">
+        tooltipContentClassName="z-60 border border-border bg-popover text-foreground opacity-100"
+        tooltipArrowClassName="z-60 bg-popover fill-popover"
+        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center border border-border rounded-full bg-card p-4 opacity-100 filter-none backdrop-blur-none disabled:invisible hover:bg-card hover:opacity-100 hover:filter-none hover:backdrop-blur-none">
         <ArrowDownIcon />
       </TooltipIconButton>
     </ThreadPrimitive.ScrollToBottom>
@@ -154,7 +154,7 @@ const Composer = () => {
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
       <ComposerPrimitive.AttachmentDropzone
-        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-black/5 bg-linen px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-border dark:border-border bg-popover px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
           placeholder="Send a message..."
@@ -208,7 +208,7 @@ const MessageError = () => {
   return (
     <MessagePrimitive.Error>
       <ErrorPrimitive.Root
-        className="aui-message-error-root mt-2 rounded-md border border-destructive bg-destructive/10 p-3 text-destructive text-sm dark:bg-destructive/5 dark:text-red-200">
+        className="aui-message-error-root mt-2 rounded-md border border-destructive bg-destructive/10 p-3 text-destructive text-sm dark:bg-destructive/5 dark:text-destructive">
         <ErrorPrimitive.Message className="aui-message-error-message line-clamp-2" />
       </ErrorPrimitive.Root>
     </MessagePrimitive.Error>

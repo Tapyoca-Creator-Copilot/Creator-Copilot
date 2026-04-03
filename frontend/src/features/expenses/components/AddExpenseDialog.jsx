@@ -245,28 +245,9 @@ const AddExpenseDialog = ({
 
               <FormField
                 control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Optional category"
-                        {...field}
-                        maxLength={80}
-                      />
-                    </FormControl>
-                    <FormDescription>Optional. Separate from department if you want.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="receiptUrl"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="md:col-span-2">
                     <FormLabel>Receipt URL</FormLabel>
                     <FormControl>
                       <Input
@@ -275,7 +256,7 @@ const AddExpenseDialog = ({
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>Optional. File uploads can be added later.</FormDescription>
+                    <FormDescription>Receipt file uploads will be added later.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

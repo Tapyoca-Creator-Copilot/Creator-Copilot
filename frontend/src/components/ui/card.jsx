@@ -9,7 +9,7 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl py-6 border border-black/5",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl py-6 border border-border dark:border-border",
         className
       )}
       {...props} />
@@ -90,6 +90,6 @@ function CardFooter({
 }
 
 export {
-  Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
+    Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
 };
 

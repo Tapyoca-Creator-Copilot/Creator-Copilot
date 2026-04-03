@@ -13,7 +13,7 @@ const HeaderMappingCard = ({
   getFileKey,
 }) => {
   return (
-    <Card className="border-black/5 lg:col-span-2 lg:sticky lg:top-6">
+    <Card className="border-black/5 dark:border-white/10 lg:col-span-2 lg:sticky lg:top-6">
       <CardHeader>
         <CardTitle>Header Mapping</CardTitle>
         <CardDescription>

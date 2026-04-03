@@ -1,20 +1,17 @@
 import {
-  IconCamera,
   IconChartBar,
   IconDashboard,
-  IconFileAi,
-  IconFileDescription,
   IconFileImport,
   IconFolder,
   IconMoneybagMinus,
-  IconSettings
+  IconSettings,
 } from "@tabler/icons-react";
-
 
 import tapyocaLogo from "@/assets/tapyoca-logo-clean.svg";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
+import { ThemeModeSwitcher } from "@/components/theme-mode-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -54,58 +51,14 @@ const data = {
       icon: IconFileImport,
     },
   ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
   navSecondary: [
     {
+      title: "Theme",
+      component: ThemeModeSwitcher,
+    },
+    {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
     },
   ],
@@ -133,7 +86,7 @@ export function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!h-auto data-[slot=sidebar-menu-button]:!p-1.5 data-[slot=sidebar-menu-button]:hover:!bg-transparent data-[slot=sidebar-menu-button]:hover:!text-sidebar-foreground data-[slot=sidebar-menu-button]:active:!bg-transparent data-[slot=sidebar-menu-button]:active:!text-sidebar-foreground">
+            <SidebarMenuButton asChild className="h-auto p-1.5 hover:bg-transparent hover:text-sidebar-foreground active:bg-transparent active:text-sidebar-foreground">
               <a href="#" className="pointer-events-none flex w-full cursor-default select-none items-center justify-between gap-2">
                 <span className="min-w-0 flex flex-col">
                   <span className="text-xl font-medium leading-tight">Creator Copilot</span>

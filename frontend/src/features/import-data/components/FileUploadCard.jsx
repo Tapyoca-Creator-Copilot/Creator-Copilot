@@ -25,7 +25,7 @@ const FileUploadCard = ({
 }) => {
   return (
     <Card
-      className={`border-black/5 transition-opacity ${
+      className={`border-black/5 dark:border-white/10 transition-opacity ${
         !selectedProject ? "pointer-events-none opacity-50" : ""
       }`}
     >
@@ -85,7 +85,7 @@ const FileUploadCard = ({
           </FileUploadList>
         </FileUpload>
 
-        <div className="flex gap-3 border-t border-black/5 pt-4">
+        <div className="flex gap-3 border-t border-black/5 dark:border-white/10 pt-4">
           <Button onClick={onImport} disabled={!canImport} size="lg">
             {isImporting ? "Importing..." : `Import ${files.length} File${files.length !== 1 ? "s" : ""}`}
           </Button>

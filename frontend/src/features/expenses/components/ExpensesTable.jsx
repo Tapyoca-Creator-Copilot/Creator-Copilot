@@ -64,7 +64,7 @@ const ExpensesTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-black/5 bg-card p-6">
+      <div className="rounded-lg border border-black/5 dark:border-white/10 bg-card p-6">
         <p className="text-sm text-muted-foreground">Loading expenses...</p>
       </div>
     );
@@ -72,7 +72,7 @@ const ExpensesTable = ({
 
   if (!expenses || expenses.length === 0) {
     return (
-      <div className="rounded-lg border border-black/5 bg-card p-8 text-center">
+      <div className="rounded-lg border border-black/5 dark:border-white/10 bg-card p-8 text-center">
         <p className="font-semibold text-foreground">{emptyTitle}</p>
         <p className="mt-2 text-sm text-muted-foreground">{emptyDescription}</p>
       </div>
@@ -93,10 +93,10 @@ const ExpensesTable = ({
         </p>
       </div>
 
-      <div className="rounded-lg border border-black/5 overflow-hidden">
+      <div className="rounded-lg border border-black/5 dark:border-white/10 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-accent border-black/5">
+            <TableRow className="bg-accent border-black/5 dark:border-white/10">
               <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Date</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Expense</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Department</TableHead>
@@ -108,7 +108,7 @@ const ExpensesTable = ({
           </TableHeader>
           <TableBody>
             {expenses.map((expense) => (
-              <TableRow key={expense.id} className="border-black/5 hover:bg-accent/50 transition-colors">
+              <TableRow key={expense.id} className="border-black/5 dark:border-white/10 hover:bg-accent/50 transition-colors">
                 <TableCell className="px-6 py-4 text-sm text-foreground flex-1">{formatDate(expense.expenseDate)}</TableCell>
                 <TableCell className="px-6 py-4 flex-1">
                   <div className="font-medium text-foreground">{expense.name}</div>

@@ -9,7 +9,7 @@ export const ProjectListCard = ({ project }) => {
       to={`/projects/${project.id}`}
       className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
     >
-      <Card className="border-black/5 bg-card py-0 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-black/10">
+      <Card className="border-black/5 dark:border-white/10 bg-card py-0 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-black/10 dark:group-hover:border-white/20">
         <CardContent className="space-y-4 p-5">
           <div className="flex items-start justify-between gap-3">
             <p className="text-left text-base leading-tight font-semibold text-foreground md:text-lg">

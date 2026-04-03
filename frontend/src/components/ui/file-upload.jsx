@@ -1,4 +1,7 @@
 "use client";;
+import { useAsRef } from "@/hooks/use-as-ref";
+import { useLazyRef } from "@/hooks/use-lazy-ref";
+import { cn } from "@/lib/utils";
 import {
   FileArchiveIcon,
   FileAudioIcon,
@@ -13,9 +16,6 @@ import {
   Slot as SlotPrimitive,
 } from "radix-ui";
 import * as React from "react";
-import { cn } from "@/lib/utils";
-import { useAsRef } from "@/hooks/use-as-ref";
-import { useLazyRef } from "@/hooks/use-lazy-ref";
 
 const ROOT_NAME = "FileUpload";
 const DROPZONE_NAME = "FileUploadDropzone";
@@ -738,7 +738,7 @@ function FileUploadDropzone(props) {
       tabIndex={context.disabled ? undefined : 0}
       {...dropzoneProps}
       className={cn(
-        "relative flex select-none flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-black/5 p-6 outline-none transition-colors hover:bg-accent/50 focus-visible:border data-disabled:pointer-events-none data-dragging:border-accent data-invalid:border-destructive data-dragging:bg-accent/30 data-invalid:ring-destructive/20",
+        "relative flex select-none flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border dark:border-border p-6 outline-none transition-colors hover:bg-accent/50 focus-visible:border data-disabled:pointer-events-none data-dragging:border-accent data-invalid:border-destructive data-dragging:bg-accent/30 data-invalid:ring-destructive/20",
         className
       )}
       onClick={onClick}
@@ -1177,5 +1177,8 @@ function FileUploadClear(props) {
   );
 }
 
-export { FileUpload, FileUploadClear, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadItemProgress, FileUploadList, FileUploadTrigger, //
-useStore as useFileUpload };
+export {
+  FileUpload, FileUploadClear, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadItemProgress, FileUploadList, FileUploadTrigger, //
+  useStore as useFileUpload
+};
+
