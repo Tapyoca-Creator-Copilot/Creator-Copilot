@@ -21,7 +21,7 @@ export const ProjectDetailContent = ({ project, onBack }) => {
         )}
       </div>
 
-      <Card className="border-black/5">
+      <Card className="border-black/5 dark:border-white/10">
         <CardContent className="p-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-lg bg-accent px-4 py-3">
@@ -50,7 +50,7 @@ export const ProjectDetailContent = ({ project, onBack }) => {
             </div>
           </div>
 
-          <div className="border-t border-black/5 pt-6">
+          <div className="border-t border-black/5 dark:border-white/10 pt-6">
             <h2 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
               Timeline
             </h2>

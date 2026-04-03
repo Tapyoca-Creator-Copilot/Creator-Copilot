@@ -25,9 +25,10 @@ export const AssistantModal = () => {
       </AssistantModalPrimitive.Anchor>
       <AssistantModalPrimitive.Content
         sideOffset={16}
-        className={`aui-root aui-modal-content data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-1/2 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:zoom-out data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-1/2 data-[state=open]:slide-in-from-right-1/2 data-[state=open]:zoom-in z-50 h-[78vh] w-[92vw] min-w-[18rem] min-h-96 max-w-[96vw] max-h-[90vh] overflow-hidden overscroll-contain rounded-xl border border-black/5 bg-popover p-0 text-popover-foreground transition-[width,height] duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in [&>.aui-thread-root]:bg-inherit [&>.aui-thread-root_.aui-thread-viewport-footer]:bg-inherit ${MODAL_SIZE_CLASSES[chatSize]}`}>
+        className={`aui-root aui-modal-content data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-1/2 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:zoom-out data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-1/2 data-[state=open]:slide-in-from-right-1/2 data-[state=open]:zoom-in z-50 h-[78vh] w-[92vw] min-w-[18rem] min-h-96 max-w-[96vw] max-h-[90vh] overflow-hidden overscroll-contain rounded-xl border border-border dark:border-border bg-popover p-0 text-popover-foreground transition-[width,height] duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in [&>.aui-thread-root]:bg-inherit [&>.aui-thread-root_.aui-thread-viewport-footer]:bg-inherit ${MODAL_SIZE_CLASSES[chatSize]}`}
+      >
         <div className="flex h-full min-h-0 flex-col">
-          <div className="flex h-11 shrink-0 items-center justify-between border-b border-black/5 px-3">
+          <div className="flex h-11 shrink-0 items-center justify-between border-b border-border dark:border-border px-3">
             <span className="text-xs font-medium">Chat Size</span>
             <div className="flex items-center gap-1">
               <Button
@@ -71,11 +72,11 @@ export const AssistantModal = () => {
 
 const ThreadHistorySidebar = () => {
   return (
-    <div className="min-h-0 border-r border-black/5 p-2">
+    <div className="min-h-0 border-r border-border dark:border-border p-2">
       <ThreadListPrimitive.Root className="flex h-full flex-col gap-2">
         <ThreadListPrimitive.New asChild>
-          <Button variant="outline" className="w-full justify-start bg-shadow-grey text-linen text-sm hover:bg-shadow-grey-hover hover:text-linen">
-            <Plus className="mr-1 h-4 w-4 text-linen" aria-hidden="true" />
+            <Button variant="outline" className="w-full justify-start text-sm bg-shadow-grey text-primary-foreground hover:bg-shadow-grey-hover hover:text-primary-foreground dark:bg-shadow-grey dark:text-primary-foreground dark:hover:bg-white dark:hover:text-accent">
+            <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
             New Chat
           </Button>
         </ThreadListPrimitive.New>
@@ -113,7 +114,7 @@ const AssistantModalButton = forwardRef(({ "data-state": state, ...rest }, ref) 
       tooltip={tooltip}
       side="left"
       {...rest}
-      className="aui-modal-button size-full rounded-none bg-transparent p-0 shadow-none transition-transform hover:scale-110 hover:bg-transparent active:scale-90"
+      className="aui-modal-button size-full rounded-none bg-transparent p-0 shadow-none transition-transform hover:scale-110 hover:!bg-transparent dark:hover:!bg-transparent focus-visible:!ring-0 focus-visible:!border-transparent active:scale-90"
       ref={ref}>
       <img
         src={tapyIcon}

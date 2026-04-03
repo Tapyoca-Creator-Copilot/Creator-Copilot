@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import AccountPage from "@/features/account/pages/AccountPage";
 import PrivateRoute from "@/features/auth/components/PrivateRoute";
 import Signin from "@/features/auth/pages/Signin";
 import Signup from "@/features/auth/pages/Signup";
@@ -9,6 +10,7 @@ import ImportDataPage from "@/features/import-data/pages/ImportDataPage";
 import CreateProjectPage from "@/features/projects/pages/CreateProjectPage";
 import ProjectDetailPage from "@/features/projects/pages/ProjectDetailPage";
 import ProjectsPage from "@/features/projects/pages/ProjectsPage";
+import SettingsPage from "@/features/settings/pages/SettingsPage";
 
 export const appRouter = createBrowserRouter([
   { path: "/", element: <Signup /> },
@@ -59,6 +61,22 @@ export const appRouter = createBrowserRouter([
     element: (
       <PrivateRoute>
         <ImportDataPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/settings",
+    element: (
+      <PrivateRoute>
+        <SettingsPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/account",
+    element: (
+      <PrivateRoute>
+        <AccountPage />
       </PrivateRoute>
     ),
   },

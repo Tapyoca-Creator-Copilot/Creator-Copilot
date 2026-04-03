@@ -9,7 +9,7 @@ const ProjectSelectionCard = ({
   onSelectProject,
 }) => {
   return (
-    <Card className="border-black/5">
+    <Card className="border-black/5 dark:border-white/10">
       <CardHeader>
         <CardTitle>Select Project</CardTitle>
         <CardDescription>

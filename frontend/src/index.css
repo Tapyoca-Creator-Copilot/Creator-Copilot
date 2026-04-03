@@ -22,8 +22,9 @@
 }
 
 body {
-  background-color: var(--color-pearl-beige);
-  color: var(--color-shadow-grey);
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 @theme inline {
@@ -103,6 +104,7 @@ body {
 }
 
 .dark {
+  color-scheme: dark;
     --background: #272727ff;
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
@@ -134,6 +136,20 @@ body {
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    --color-pearl-beige: #1f1a16;
+    --color-pearl-beige-hover: #2c2520;
+    --color-chocolate: #c87343ff;
+    --color-chocolate-hover: rgb(233, 149, 101);
+    --color-shadow-grey: #f4eadb;
+    --color-shadow-grey-hover: #ffffff;
+    --color-bright-marine: #7eb1db;
+    --color-bright-marine-hover: #9cc7ea;
+    --color-indigo-velvet: #af88e7;
+    --color-indigo-velvet-hover: #c8a7f6;
+    --color-linen: #24201c;
+    --color-linen-hover: rgba(255, 255, 255, 0.06);
+    --color-sage-green: #9abf7a;
+    --color-sage-green-hover: #b4d291;
 }
 
 @layer base {
@@ -147,7 +163,7 @@ body {
 
 .blur-background {
   position: relative;
-  background-color: #FBF3EB;
+  background-color: var(--background);
   background-image:
     linear-gradient(90deg, var(--sidebar) 0%, var(--sidebar) .05%, transparent 16%),
     radial-gradient(at 95% 70%, #F4E9C1 0%, transparent 60%),
@@ -176,6 +192,33 @@ body {
   background-size: 200px 200px;
   mix-blend-mode: soft-light;
   z-index: 0;
+}
+
+.dark .blur-background {
+  position: relative;
+  background-color: var(--background);
+  background-image:
+    linear-gradient(90deg, #161616 5%, #16161694 10%, #16161665 16%),
+    radial-gradient(at 95% 70%, #252525 0%, transparent 60%),
+    radial-gradient(at 45% 35%, #333333 0%, #0c0c0c 52%, transparent 88%),
+    radial-gradient(at 5% 90%, #272727 0%, transparent 50%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  min-height: 100svh;
+  min-height: 100vh;
+}
+
+.dark .auth-left-background {
+  background: #252525;
+}
+
+.dark .auth-right-background {
+  background: var(--sidebar);
+}
+
+html {
+  color-scheme: light;
 }
 
 .auth-left-background {
