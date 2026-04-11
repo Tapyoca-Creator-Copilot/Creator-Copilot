@@ -101,10 +101,10 @@ const AddExpenseDialog = ({
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Project</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={field.onChange} disabled>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={projectOptions.length ? "Select a project" : "No projects found"} />
+                          <SelectValue placeholder={projectOptions.length ? "Active project" : "No projects found"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent align="start" className="bg-linen">

@@ -10,11 +10,13 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 import { CreateProjectForm } from "@/features/projects/components/CreateProjectForm";
 import { projectSchema } from "@/features/projects/forms/createProjectSchema";
+import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 import { createProject } from "@/features/projects/services/projects";
 
 const CreateProjectPage = () => {
   const navigate = useNavigate();
   const { session } = UserAuth();
+  const { refreshProjects, setActiveProjectId } = useActiveProject();
   const currentYear = new Date().getFullYear();
   const minCalendarYear = currentYear - 36;
   const maxCalendarYear = currentYear + 10;
@@ -50,6 +52,8 @@ const CreateProjectPage = () => {
       const result = await createProject(payload, { userId: session?.user?.id });
       toast.success("Project created successfully");
       if (result?.data?.id) {
+        await refreshProjects();
+        setActiveProjectId(result.data.id);
         navigate(`/projects/${result.data.id}`);
         return;
       }

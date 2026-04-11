@@ -34,7 +34,7 @@ const FileUploadCard = ({
         <CardDescription>
           {selectedProject
             ? `Import data to "${selectedProject.name}"`
-            : "Select a project above to enable file upload"}
+            : "Select a project in the header to enable file upload"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

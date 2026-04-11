@@ -8,12 +8,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 import { ProjectDetailContent } from "@/features/projects/components/ProjectDetailContent";
+import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 import { getProjectById } from "@/features/projects/services/projects";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const { session } = UserAuth();
+  const { setActiveProjectId } = useActiveProject();
 
   const [project, setProject] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,12 +33,15 @@ const ProjectDetailPage = () => {
     try {
       const { data } = await getProjectById(projectId, { userId: session?.user?.id });
       setProject(data || null);
+      if (data?.id) {
+        setActiveProjectId(data.id);
+      }
     } catch {
       setProject(null);
       setLoadError("Unable to load this project from Supabase.");
     }
     setIsLoading(false);
-  }, [projectId, session?.user?.id]);
+  }, [projectId, session?.user?.id, setActiveProjectId]);
 
   useEffect(() => {
     loadProject();

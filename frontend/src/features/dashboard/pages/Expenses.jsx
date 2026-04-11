@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 
@@ -15,14 +15,16 @@ import EditExpenseDialog from "@/features/expenses/components/EditExpenseDialog"
 import ExpenseFilters from "@/features/expenses/components/ExpenseFilters";
 import ExpensesTable from "@/features/expenses/components/ExpensesTable";
 import { getBudgetSummary, getExpenses } from "@/features/expenses/services/expenses";
-import { getProjects } from "@/features/projects/services/projects";
+import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const Expenses = () => {
   const { session } = UserAuth();
-
-  const [projects, setProjects] = useState([]);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const {
+    projects,
+    activeProjectId: selectedProjectId,
+    activeProject: selectedProject,
+    isLoadingProjects,
+  } = useActiveProject();
 
   const [expenses, setExpenses] = useState([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
@@ -42,33 +44,6 @@ const Expenses = () => {
     session?.user?.user_metadata?.full_name ||
     session?.user?.email?.split("@")[0] ||
     "User";
-
-  const loadProjects = useCallback(async () => {
-    if (!session?.user?.id) {
-      setProjects([]);
-      setSelectedProjectId("");
-      setIsLoadingProjects(false);
-      return;
-    }
-
-    setIsLoadingProjects(true);
-    try {
-      const { data } = await getProjects({ userId: session.user.id });
-      setProjects(data || []);
-
-      setSelectedProjectId((previous) => {
-        if (previous && (data || []).some((project) => project.id === previous)) {
-          return previous;
-        }
-        return "";
-      });
-    } catch {
-      setProjects([]);
-      setSelectedProjectId("");
-      toast.error("Unable to load projects. Please try again.");
-    }
-    setIsLoadingProjects(false);
-  }, [session?.user?.id]);
 
   const loadBudgetSummary = useCallback(async () => {
     if (!session?.user?.id || !selectedProjectId) {
@@ -112,10 +87,6 @@ const Expenses = () => {
   }, [department, loadBudgetSummary, selectedProjectId, session?.user?.id]);
 
   useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
-
-  useEffect(() => {
     loadExpenses();
   }, [loadExpenses]);
 
@@ -123,10 +94,9 @@ const Expenses = () => {
     loadBudgetSummary();
   }, [loadBudgetSummary]);
 
-  const selectedProject = useMemo(
-    () => projects.find((project) => project.id === selectedProjectId) || null,
-    [projects, selectedProjectId]
-  );
+  useEffect(() => {
+    setSearch("");
+  }, [selectedProjectId]);
 
   const visibleExpenses = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -248,38 +218,32 @@ const Expenses = () => {
 
           <Card>
             <CardHeader className="space-y-1">
-              <CardTitle>Project</CardTitle>
-              <CardDescription>Select a project to view and add expenses.</CardDescription>
+              <CardTitle>Active Project</CardTitle>
+              <CardDescription>
+                {isLoadingProjects
+                  ? "Loading your projects..."
+                  : selectedProject
+                    ? "Use the project selector in the header to switch context."
+                    : "Create a project to start tracking expenses."}
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="w-full md:max-w-lg">
-                <Select
-                  value={selectedProjectId}
-                  onValueChange={(value) => {
-                    setSelectedProjectId(value);
-                    setSearch("");
-                  }}
-                  disabled={isLoadingProjects || projects.length === 0}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={
-                        isLoadingProjects
-                          ? "Loading projects..."
-                          : projects.length
-                            ? "Select a project"
-                            : "No projects available"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent align="start">
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isLoadingProjects ? (
+                  <p className="text-sm text-muted-foreground">Loading projects...</p>
+                ) : selectedProject ? (
+                  <div className="rounded-md border border-input/60 p-3">
+                    <p className="text-sm text-muted-foreground">Currently viewing</p>
+                    <p className="font-medium">{selectedProject.name}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-input/60 p-3">
+                    <p className="font-medium">No project selected</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Create a project first, then pick it from the global selector in the header.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-2">
@@ -290,10 +254,15 @@ const Expenses = () => {
                 >
                   Export CSV
                 </Button>
+                {!isLoadingProjects && projects.length === 0 ? (
+                  <Button type="button" asChild>
+                    <Link to="/projects/new">Create New Project</Link>
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   onClick={() => setIsAddOpen(true)}
-                  disabled={projects.length === 0}
+                  disabled={isLoadingProjects || !selectedProjectId}
                 >
                   Add Expense
                 </Button>
