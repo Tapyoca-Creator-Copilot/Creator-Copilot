@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -7,19 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
+import ArchiveProjectDialog from "@/features/projects/components/ArchiveProjectDialog";
 import { ProjectDetailContent } from "@/features/projects/components/ProjectDetailContent";
-import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
-import { getProjectById } from "@/features/projects/services/projects";
+import { archiveProject, getProjectById } from "@/features/projects/services/projects";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const { session } = UserAuth();
-  const { setActiveProjectId } = useActiveProject();
 
   const [project, setProject] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
   const loadProject = useCallback(async () => {
     if (!projectId || !session?.user?.id) {
@@ -33,19 +35,33 @@ const ProjectDetailPage = () => {
     try {
       const { data } = await getProjectById(projectId, { userId: session?.user?.id });
       setProject(data || null);
-      if (data?.id) {
-        setActiveProjectId(data.id);
-      }
     } catch {
       setProject(null);
       setLoadError("Unable to load this project from Supabase.");
     }
     setIsLoading(false);
-  }, [projectId, session?.user?.id, setActiveProjectId]);
+  }, [projectId, session?.user?.id]);
 
   useEffect(() => {
     loadProject();
   }, [loadProject]);
+
+  const handleArchiveProject = useCallback(async () => {
+    if (!project?.id || !session?.user?.id) {
+      return;
+    }
+
+    setIsArchiving(true);
+    try {
+      await archiveProject(project.id, { userId: session.user.id });
+      toast.success("Project archived.");
+      setIsArchiveDialogOpen(false);
+      navigate("/projects");
+    } catch (error) {
+      toast.error(error?.message || "Unable to archive this project.");
+    }
+    setIsArchiving(false);
+  }, [navigate, project?.id, session?.user?.id]);
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>
@@ -91,8 +107,21 @@ const ProjectDetailPage = () => {
               </CardContent>
             </Card>
           ) : (
-            <ProjectDetailContent project={project} onBack={() => navigate("/projects")} />
+            <ProjectDetailContent
+              project={project}
+              onBack={() => navigate("/projects")}
+              onArchive={() => setIsArchiveDialogOpen(true)}
+              isArchiving={isArchiving}
+            />
           )}
+
+          <ArchiveProjectDialog
+            open={isArchiveDialogOpen}
+            onOpenChange={setIsArchiveDialogOpen}
+            projectName={project?.name}
+            isArchiving={isArchiving}
+            onConfirm={handleArchiveProject}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>

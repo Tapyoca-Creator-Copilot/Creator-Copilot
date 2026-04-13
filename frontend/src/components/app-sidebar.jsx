@@ -1,4 +1,5 @@
 import {
+  IconArchive,
   IconChartBar,
   IconDashboard,
   IconFileImport,
@@ -44,6 +45,11 @@ const data = {
       title: "Projects",
       url: "/projects",
       icon: IconFolder,
+    },
+    {
+      title: "Archived Projects",
+      url: "/projects/archived",
+      icon: IconArchive,
     },
     {
       title: "Import Data",
