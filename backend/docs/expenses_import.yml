@@ -1,0 +1,59 @@
+tags:
+  - Expenses
+summary: Import expenses from CSV
+description: |
+  Upload a CSV file along with a JSON column mapping to bulk-import expenses
+  into a project. Per-row validation errors are returned in the response
+  without aborting the whole import. Maximum 500 rows per request.
+consumes:
+  - multipart/form-data
+parameters:
+  - name: project_id
+    in: path
+    type: string
+    required: true
+    description: Project UUID
+  - name: file
+    in: formData
+    type: file
+    required: true
+    description: CSV file to import
+  - name: mapping
+    in: formData
+    type: string
+    required: true
+    description: |
+      JSON object mapping CSV column headers to expense fields.
+      Valid targets: name, amount, department, expenseDate, category,
+      description, vendor, receiptUrl.
+      Example: {"Date": "expenseDate", "Description": "name", "Amount": "amount", "Department": "department"}
+security:
+  - BearerAuth: []
+responses:
+  200:
+    description: Import results
+    schema:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            imported:
+              type: integer
+              description: Number of rows successfully imported
+            skipped:
+              type: integer
+              description: Number of rows skipped due to errors
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  row:
+                    type: integer
+                  error:
+                    type: string
+  400:
+    description: Bad request (missing file, bad mapping, validation error)
+  401:
+    description: Missing or invalid Bearer token

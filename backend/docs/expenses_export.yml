@@ -1,0 +1,23 @@
+tags:
+  - Expenses
+summary: Export project expenses as CSV
+description: Download all expenses for a specific project as a CSV file.
+produces:
+  - text/csv
+parameters:
+  - name: project_id
+    in: path
+    type: string
+    required: true
+    description: Project UUID
+security:
+  - BearerAuth: []
+responses:
+  200:
+    description: CSV file download
+    schema:
+      type: file
+  400:
+    description: Bad request
+  401:
+    description: Missing or invalid Bearer token
