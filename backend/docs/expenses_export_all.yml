@@ -1,0 +1,17 @@
+tags:
+  - Expenses
+summary: Export all expenses as CSV
+description: Download all expenses across all projects for the authenticated user as a CSV file.
+produces:
+  - text/csv
+security:
+  - BearerAuth: []
+responses:
+  200:
+    description: CSV file download
+    schema:
+      type: file
+  400:
+    description: Bad request
+  401:
+    description: Missing or invalid Bearer token

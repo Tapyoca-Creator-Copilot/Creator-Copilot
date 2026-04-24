@@ -1,0 +1,26 @@
+tags:
+  - Budget
+summary: Export budget summary as CSV
+description: |
+  Download the budget summary for a project as a CSV file, including
+  budget ceiling, total spent, remaining balance, and a department-level
+  spending breakdown.
+produces:
+  - text/csv
+parameters:
+  - name: project_id
+    in: path
+    type: string
+    required: true
+    description: Project UUID
+security:
+  - BearerAuth: []
+responses:
+  200:
+    description: CSV file download
+    schema:
+      type: file
+  404:
+    description: Project not found
+  401:
+    description: Missing or invalid Bearer token

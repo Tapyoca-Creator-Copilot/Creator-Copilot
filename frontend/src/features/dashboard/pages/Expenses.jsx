@@ -9,12 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 
+import { KPICardsSection } from "@/features/analytics/components/kpi-cards";
 import AddExpenseDialog from "@/features/expenses/components/AddExpenseDialog";
 import DeleteExpenseDialog from "@/features/expenses/components/DeleteExpenseDialog";
 import EditExpenseDialog from "@/features/expenses/components/EditExpenseDialog";
 import ExpenseFilters from "@/features/expenses/components/ExpenseFilters";
 import ExpensesTable from "@/features/expenses/components/ExpensesTable";
-import { getBudgetSummary, getExpenses } from "@/features/expenses/services/expenses";
+import { exportProjectExpensesCsv, getExpenses } from "@/features/expenses/services/expenses";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const Expenses = () => {
@@ -29,8 +30,8 @@ const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
 
-  const [budgetSummary, setBudgetSummary] = useState(null);
-  const [isLoadingBudgetSummary, setIsLoadingBudgetSummary] = useState(false);
+  const [kpiExpenses, setKpiExpenses] = useState([]);
+  const [isLoadingKpiExpenses, setIsLoadingKpiExpenses] = useState(false);
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
@@ -39,28 +40,32 @@ const Expenses = () => {
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const userName =
     session?.user?.user_metadata?.full_name ||
     session?.user?.email?.split("@")[0] ||
     "User";
 
-  const loadBudgetSummary = useCallback(async () => {
+  const loadKpiExpenses = useCallback(async () => {
     if (!session?.user?.id || !selectedProjectId) {
-      setBudgetSummary(null);
-      setIsLoadingBudgetSummary(false);
+      setKpiExpenses([]);
+      setIsLoadingKpiExpenses(false);
       return;
     }
 
-    setIsLoadingBudgetSummary(true);
+    setIsLoadingKpiExpenses(true);
     try {
-      const summary = await getBudgetSummary(selectedProjectId);
-      setBudgetSummary(summary || null);
+      const { data } = await getExpenses({
+        userId: session.user.id,
+        projectId: selectedProjectId,
+      });
+      setKpiExpenses(data || []);
     } catch {
-      setBudgetSummary(null);
-      toast.error("Unable to load budget summary. Please try again.");
+      setKpiExpenses([]);
+      toast.error("Unable to load KPI summary. Please try again.");
     }
-    setIsLoadingBudgetSummary(false);
+    setIsLoadingKpiExpenses(false);
   }, [selectedProjectId, session?.user?.id]);
 
   const loadExpenses = useCallback(async () => {
@@ -78,21 +83,20 @@ const Expenses = () => {
         department,
       });
       setExpenses(data || []);
-      loadBudgetSummary();
     } catch {
       setExpenses([]);
       toast.error("Unable to load expenses. Please try again.");
     }
     setIsLoadingExpenses(false);
-  }, [department, loadBudgetSummary, selectedProjectId, session?.user?.id]);
+  }, [department, selectedProjectId, session?.user?.id]);
 
   useEffect(() => {
     loadExpenses();
   }, [loadExpenses]);
 
   useEffect(() => {
-    loadBudgetSummary();
-  }, [loadBudgetSummary]);
+    loadKpiExpenses();
+  }, [loadKpiExpenses]);
 
   useEffect(() => {
     setSearch("");
@@ -122,22 +126,6 @@ const Expenses = () => {
 
   const isProjectGateActive = !selectedProjectId;
 
-  const formatBudget = (amount, currency) => {
-    if (typeof amount !== "number" || Number.isNaN(amount)) {
-      return "—";
-    }
-
-    try {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency || "USD",
-        maximumFractionDigits: 2,
-      }).format(amount);
-    } catch {
-      return `${currency || "USD"} ${amount.toFixed(2)}`;
-    }
-  };
-
   const handleEditExpense = (expense) => {
     setExpenseToEdit(expense);
     setIsEditOpen(true);
@@ -165,12 +153,13 @@ const Expenses = () => {
         },
         ...(previous || []),
       ]);
-      loadBudgetSummary();
+      loadKpiExpenses();
       return;
     }
 
     // It was created successfully, but doesn't match current filters.
     loadExpenses();
+    loadKpiExpenses();
   };
 
   const handleExpenseUpdated = (updated) => {
@@ -189,7 +178,7 @@ const Expenses = () => {
           : expense
       )
     );
-    loadBudgetSummary();
+    loadKpiExpenses();
   };
 
   const handleExpenseDeleted = (deletedId) => {
@@ -199,7 +188,39 @@ const Expenses = () => {
     }
 
     setExpenses((previous) => (previous || []).filter((expense) => expense.id !== deletedId));
-    loadBudgetSummary();
+    loadKpiExpenses();
+  };
+
+  const handleExportCsv = async () => {
+    if (!session?.user?.id) {
+      toast.error("You must be signed in to export.");
+      return;
+    }
+
+    if (!selectedProjectId) {
+      toast.error("Select a project to export.");
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      const { blob, filename } = await exportProjectExpensesCsv(selectedProjectId, {
+        userId: session.user.id,
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename || "expenses.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error?.message || "Unable to export CSV. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -250,9 +271,10 @@ const Expenses = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={projects.length === 0 || !selectedProjectId}
+                  onClick={handleExportCsv}
+                  disabled={isExporting || projects.length === 0 || !selectedProjectId}
                 >
-                  Export CSV
+                  {isExporting ? "Exporting..." : "Export CSV"}
                 </Button>
                 {!isLoadingProjects && projects.length === 0 ? (
                   <Button type="button" asChild>
@@ -306,51 +328,17 @@ const Expenses = () => {
             expense={expenseToDelete}
             onDeleted={handleExpenseDeleted}
           />
-          {!isProjectGateActive &&
-            (isLoadingBudgetSummary ? (
-              <Card>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Loading budget summary...</p>
-                </CardContent>
-              </Card>
-            ) : budgetSummary ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {/*Budget Ceiling Card*/}
-                <Card>
-                  <CardContent className="px-6">
-                    <p className="text-sm text-muted-foreground">Budget</p>
-                    <p className="mt-1 text-xl font-semibold text-foreground">
-                      {formatBudget(budgetSummary.budgetCeiling, selectedProject?.currency)}
-                    </p>
-                  </CardContent>
-                </Card>
-                {/*Spent Card*/}
-                <Card>
-                  <CardContent className="px-6">
-                    <p className="text-sm text-muted-foreground">Spent</p>
-                    <p className="mt-1 text-xl font-semibold text-foreground">
-                      {formatBudget(budgetSummary.totalSpent, selectedProject?.currency)}
-                    </p>
-                  </CardContent>
-                </Card>
-                {/*Remaining Budget Card*/}
-                <Card>
-                  <CardContent className="px-6">
-                    <p className="text-sm text-muted-foreground">Remaining</p>
-                    <p
-                      className={`mt-1 text-xl font-semibold ${budgetSummary.overBudget ? "text-destructive" : "text-foreground"}`}>
-                      {formatBudget(budgetSummary.remaining, selectedProject?.currency)}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">No budget summary available.</p>
-                </CardContent>
-              </Card>
-            ))}
+
+          <KPICardsSection
+            projectId={selectedProjectId}
+            project={selectedProject}
+            expenses={kpiExpenses}
+            isLoading={isLoadingKpiExpenses}
+            error={null}
+            timeRange="month"
+            projectStartDate={selectedProject?.startDate}
+            projectEndDate={selectedProject?.endDate}
+          />
 
           <Card>
             <CardHeader className="space-y-1">

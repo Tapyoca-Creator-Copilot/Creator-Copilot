@@ -8,17 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
-import { createExpense } from "@/features/expenses/services/expenses";
+import { importExpensesCsv } from "@/features/expenses/services/expenses";
 import FileUploadCard from "@/features/import-data/components/FileUploadCard";
 import HeaderMappingCard from "@/features/import-data/components/HeaderMappingCard";
 import { EXPENSE_FIELD_CONFIG } from "@/features/import-data/constants/expenseFieldConfig";
 import { useCsvHeaderMapping } from "@/features/import-data/hooks/useCsvHeaderMapping";
-import {
-  getFileKey,
-  normalizeDate,
-  parseAmount,
-  parseCsvRecords,
-} from "@/features/import-data/utils/csvImportUtils";
+import { getFileKey } from "@/features/import-data/utils/csvImportUtils";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const ImportDataPage = () => {
@@ -91,55 +86,38 @@ const ImportDataPage = () => {
 
     setIsImporting(true);
     try {
-      let createdCount = 0;
+      let importedCount = 0;
       let skippedCount = 0;
 
       for (const file of csvFiles) {
         const fileKey = getFileKey(file);
-        const mapping = mappingByFile[fileKey] || {};
-        const text = await file.text();
-        const records = parseCsvRecords(text);
+        const fieldToHeader = mappingByFile[fileKey] || {};
 
-        for (const record of records) {
-          const name = (record[mapping.name] || "").trim();
-          const department = (record[mapping.department] || "").trim();
-          const amount = parseAmount(record[mapping.amount]);
-          const expenseDate = normalizeDate(record[mapping.expenseDate]);
-          const vendor = (record[mapping.vendor] || "").trim() || null;
-          const description = (record[mapping.description] || "").trim() || null;
-
-          if (!name || !department || !expenseDate || !Number.isFinite(amount) || amount <= 0) {
-            skippedCount += 1;
-            continue;
+        const columnMapping = Object.entries(fieldToHeader).reduce((acc, [fieldKey, headerName]) => {
+          if (headerName) {
+            acc[headerName] = fieldKey;
           }
+          return acc;
+        }, {});
 
-          try {
-            await createExpense(
-              {
-                projectId: selectedProject.id,
-                name,
-                amount,
-                department,
-                expenseDate,
-                vendor,
-                description,
-              },
-              { userId: session?.user?.id }
-            );
-            createdCount += 1;
-          } catch {
-            skippedCount += 1;
-          }
-        }
+        const result = await importExpensesCsv(
+          selectedProject.id,
+          file,
+          columnMapping,
+          { userId: session?.user?.id }
+        );
+
+        importedCount += Number(result?.data?.imported ?? 0);
+        skippedCount += Number(result?.data?.skipped ?? 0);
       }
 
-      if (createdCount === 0) {
-        toast.error("No expenses were imported. Check mapping and row values.");
+      if (importedCount === 0) {
+        toast.error("No expenses were imported. Check your CSV and mapping.");
         return;
       }
 
       toast.success(
-        `${createdCount} expense${createdCount !== 1 ? "s" : ""} imported to "${selectedProject.name}"${
+        `${importedCount} expense${importedCount !== 1 ? "s" : ""} imported to "${selectedProject.name}"${
           skippedCount > 0 ? ` (${skippedCount} skipped)` : ""
         }`
       );

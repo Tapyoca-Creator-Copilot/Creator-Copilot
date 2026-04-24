@@ -17,9 +17,13 @@ async function getAccessToken() {
 export async function apiFetch(path, options = {}) {
   const token = await getAccessToken();
 
+  const isFormData =
+    typeof FormData !== "undefined" &&
+    options.body instanceof FormData;
+
   const headers = {
-    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...options.headers,
   };
 
@@ -36,4 +40,41 @@ export async function apiFetch(path, options = {}) {
   }
 
   return body;
+}
+
+/**
+ * Fetch helper for non-JSON responses (e.g., CSV downloads).
+ * Returns the raw Response after performing the same auth/error handling.
+ */
+export async function apiFetchResponse(path, options = {}) {
+  const token = await getAccessToken();
+
+  const isFormData =
+    typeof FormData !== "undefined" &&
+    options.body instanceof FormData;
+
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(isFormData ? {} : options.body != null ? { "Content-Type": "application/json" } : {}),
+    ...options.headers,
+  };
+
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (!res.ok) {
+    const cloned = res.clone();
+
+    const body = await cloned.json().catch(async () => {
+      const text = await cloned.text().catch(() => "");
+      return text ? { error: text } : null;
+    });
+
+    const message = body?.error || body?.message || `Request failed (${res.status})`;
+    throw new Error(message);
+  }
+
+  return res;
 }
