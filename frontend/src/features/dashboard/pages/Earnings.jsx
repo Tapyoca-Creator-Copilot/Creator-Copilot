@@ -190,6 +190,13 @@ const Earnings = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isLoadingProjects || projects.length === 0 || !selectedProjectId}
+                >
+                  Export CSV
+                </Button>
                 {!isLoadingProjects && projects.length === 0 ? (
                   <Button type="button" asChild>
                     <Link to="/projects/new">Create New Project</Link>

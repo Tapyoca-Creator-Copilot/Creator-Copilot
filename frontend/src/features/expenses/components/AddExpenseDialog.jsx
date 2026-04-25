@@ -292,7 +292,6 @@ const AddExpenseDialog = ({
               <Button
                 type="button"
                 variant="outline"
-                
                 onClick={() => onOpenChange?.(false)}
                 disabled={isSubmitting}
               >
