@@ -1,10 +1,11 @@
 import {
   IconArchive,
   IconChartBar,
-  IconDashboard,
   IconFileImport,
   IconFolder,
+  IconLayoutDashboard,
   IconMoneybagMinus,
+  IconMoneybagPlus,
   IconSettings,
 } from "@tabler/icons-react";
 
@@ -27,9 +28,14 @@ import { UserAuth } from "@/features/auth/context/AuthContext";
 const data = {
   navMain: [
     {
-      title: "Overview",
+      title: "Dashboard",
       url: "/dashboard",
-      icon: IconDashboard,
+      icon: IconLayoutDashboard,
+    },
+    {
+      title: "Earnings",
+      url: "/earnings",
+      icon: IconMoneybagPlus,
     },
     {
       title: "Expenses",
