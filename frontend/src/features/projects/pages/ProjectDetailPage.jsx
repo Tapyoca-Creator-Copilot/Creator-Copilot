@@ -116,16 +116,16 @@ const ProjectDetailPage = () => {
           )}
 
           <ArchiveProjectDialog
-            open={isArchiveDialogOpen}
-            onOpenChange={setIsArchiveDialogOpen}
-            projectName={project?.name}
-            isArchiving={isArchiving}
-            onConfirm={handleArchiveProject}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-};
+              open={isArchiveDialogOpen}
+              onOpenChange={setIsArchiveDialogOpen}
+              projectName={project?.name}
+              isArchiving={isArchiving}
+              onConfirm={handleArchiveProject}
+            />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  };
 
-export default ProjectDetailPage;
+  export default ProjectDetailPage;

@@ -108,7 +108,7 @@ const columns = [
     cell: ({ row }) => (
       <Badge variant="outline" className="text-muted-foreground px-1.5">
         {row.original.status === "Done" ? (
-          <IconCircleCheckFilled className="fill-sage-green dark:fill-sage-green" />
+          <IconCircleCheckFilled className="fill-emerald-600 dark:fill-emerald-400" />
         ) : (
           <IconLoader />
         )}

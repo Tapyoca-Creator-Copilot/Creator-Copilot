@@ -251,7 +251,7 @@ export const CreateProjectForm = ({
         <CardFooter className="px-0 pb-0 pt-2">
           <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button
-              className="bg-linen"
+              
               type="button"
               variant="outline"
               onClick={onCancel}

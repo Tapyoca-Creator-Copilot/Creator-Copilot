@@ -6,7 +6,7 @@ const ArchiveProjectDialog = ({ open, onOpenChange, projectName, isArchiving, on
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-card dark:bg-card">
+      <DialogContent className="max-w-md bg-card dark:bg-card ">
         <DialogHeader>
           <DialogTitle>Archive project?</DialogTitle>
           <DialogDescription>

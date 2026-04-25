@@ -1,7 +1,7 @@
 import {
-    ComposerAddAttachment,
-    ComposerAttachments,
-    UserMessageAttachments,
+  ComposerAddAttachment,
+  ComposerAttachments,
+  UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
@@ -9,29 +9,29 @@ import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-    ActionBarMorePrimitive,
-    ActionBarPrimitive,
-    AuiIf,
-    BranchPickerPrimitive,
-    ComposerPrimitive,
-    ErrorPrimitive,
-    MessagePrimitive,
-    SuggestionPrimitive,
-    ThreadPrimitive,
-    useAuiState,
+  ActionBarMorePrimitive,
+  ActionBarPrimitive,
+  AuiIf,
+  BranchPickerPrimitive,
+  ComposerPrimitive,
+  ErrorPrimitive,
+  MessagePrimitive,
+  SuggestionPrimitive,
+  ThreadPrimitive,
+  useAuiState,
 } from "@assistant-ui/react";
 import {
-    ArrowDownIcon,
-    ArrowUpIcon,
-    CheckIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    CopyIcon,
-    DownloadIcon,
-    MoreHorizontalIcon,
-    PencilIcon,
-    RefreshCwIcon,
-    SquareIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  DownloadIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  RefreshCwIcon,
+  SquareIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -154,7 +154,7 @@ const Composer = () => {
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
       <ComposerPrimitive.AttachmentDropzone
-        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-border dark:border-border bg-popover px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-border bg-popover px-1 pt-2 outline-none transition-colors has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
           placeholder="Send a message..."
@@ -286,7 +286,7 @@ const AssistantActionBar = () => {
         <ActionBarMorePrimitive.Content
           side="bottom"
           align="start"
-          className="aui-action-bar-more-content z-50 min-w-32 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+          className="aui-action-bar-more-content z-50 min-w-32 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground">
           <ActionBarPrimitive.ExportMarkdown asChild>
             <ActionBarMorePrimitive.Item
               className="aui-action-bar-more-item flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
@@ -308,7 +308,7 @@ const UserMessage = () => {
       <UserMessageAttachments />
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
         <div
-          className="aui-user-message-content wrap-break-words rounded-2xl bg-chocolate px-4 py-2.5 text-linen hover:bg-chocolate-hover">
+          className="aui-user-message-content wrap-break-words rounded-2xl bg-primary px-4 py-2.5 text-primary-foreground hover:bg-primary/90">
           <MessagePrimitive.Parts />
         </div>
         <div
@@ -342,7 +342,7 @@ const EditComposer = () => {
     <MessagePrimitive.Root
       className="aui-edit-composer-wrapper mx-auto flex w-full max-w-(--thread-max-width) flex-col px-2 py-3">
       <ComposerPrimitive.Root
-        className="aui-edit-composer-root ml-auto flex w-full max-w-[85%] flex-col rounded-2xl border border-input outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+        className="aui-edit-composer-root ml-auto flex w-full max-w-[85%] flex-col rounded-2xl border border-input outline-none transition-colors has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerPrimitive.Input
           className="aui-edit-composer-input min-h-14 w-full resize-none bg-transparent p-4 text-foreground text-sm outline-none"
           autoFocus />

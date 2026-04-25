@@ -11,7 +11,7 @@ export const EmptyProjectsGuide = () => {
   };
 
   return (
-    <Card className="border bg-card shadow-none">
+    <Card className="border bg-card">
       <CardHeader>
         <CardTitle>Create Your First Project</CardTitle>
         <CardDescription>Get started by creating a project to track budgets, expenses, and timelines.</CardDescription>
@@ -49,10 +49,7 @@ export const EmptyProjectsGuide = () => {
           </div>
         </div>
 
-        <Button
-          onClick={handleCreateProject}
-          className="w-full gap-2 bg-chocolate hover:bg-chocolate-hover"
-        >
+        <Button onClick={handleCreateProject} className="w-full gap-2">
           <Plus className="h-4 w-4" />
           Create Your First Project
         </Button>

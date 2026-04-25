@@ -2,14 +2,19 @@
 import { cn } from "@/lib/utils";
 
 function Card({
+  variant = "default",
   className,
   ...props
 }) {
+  const variantClassName =
+    variant === "kpi" ? "gap-4" : "gap-6";
+
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl py-6 border border-border dark:border-border",
+        "bg-card text-card-foreground flex flex-col rounded-lg border border-border py-6",
+        variantClassName,
         className
       )}
       {...props} />
@@ -38,7 +43,7 @@ function CardTitle({
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold text-2xl", className)}
+      className={cn("text-foreground text-lg font-semibold tracking-tight leading-none", className)}
       {...props} />
   );
 }
@@ -50,7 +55,7 @@ function CardDescription({
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-muted-foreground text-sm leading-6", className)}
       {...props} />
   );
 }
