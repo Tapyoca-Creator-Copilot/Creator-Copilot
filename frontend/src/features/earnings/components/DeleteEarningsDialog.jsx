@@ -3,9 +3,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { deleteEarning } from "@/features/earnings/services/earnings";
 
-const DeleteEarningsDialog = ({ open, onOpenChange, session, earning, onDeleted }) => {
+const DeleteEarningsDialog = ({ open, onOpenChange, session, earning, onDeleted, deleteFn }) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleConfirmDelete = async () => {
@@ -16,7 +15,7 @@ const DeleteEarningsDialog = ({ open, onOpenChange, session, earning, onDeleted 
 
     try {
       setIsDeleting(true);
-      const result = await deleteEarning(earning.id, { userId: session?.user?.id, projectId: earning.projectId });
+      const result = await deleteFn(earning.id, { userId: session?.user?.id, projectId: earning.projectId });
       toast.success("Earning deleted");
       onDeleted?.(result?.data?.id || earning.id);
       onOpenChange?.(false);

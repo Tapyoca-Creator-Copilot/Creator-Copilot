@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { EARNING_SOURCE_TYPES, createEarning } from "@/features/earnings/services/earnings";
+import { EARNING_SOURCE_TYPES } from "@/features/earnings/services/earnings";
 import { DESCRIPTION_LIMIT, buildAddDefaultValues, earningSchema, formatDateLabel, formatLocalYmd, parseLocalYmd } from "@/features/earnings/utils/earningsForm";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ const AddEarningsDialog = ({
   projects = [],
   selectedProjectId,
   onCreated,
+  createFn,
 }) => {
   const currentYear = new Date().getFullYear();
   const minCalendarYear = currentYear - 36;
@@ -55,7 +56,7 @@ const AddEarningsDialog = ({
 
   const handleSubmit = async (values) => {
     try {
-      const result = await createEarning(
+      const result = await createFn(
         {
           projectId: values.projectId,
           name: values.name,

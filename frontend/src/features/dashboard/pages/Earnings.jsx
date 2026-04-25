@@ -14,8 +14,22 @@ import DeleteEarningsDialog from "@/features/earnings/components/DeleteEarningsD
 import EditEarningsDialog from "@/features/earnings/components/EditEarningsDialog";
 import EarningsFilters from "@/features/earnings/components/EarningsFilters";
 import EarningsTable from "@/features/earnings/components/EarningsTable";
-import { getEarnings } from "@/features/earnings/services/earnings";
+import {
+  createEarningInSupabase,
+  createEarningViaApi,
+  deleteEarningInSupabase,
+  deleteEarningViaApi,
+  getEarningsFromApi,
+  getEarningsFromSupabase,
+  updateEarningInSupabase,
+  updateEarningViaApi,
+} from "@/features/earnings/services/earnings";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
+
+const DATA_SOURCES = [
+  { key: "supabase", label: "Supabase" },
+  { key: "api", label: "Backend API" },
+];
 
 const Earnings = () => {
   const { session } = UserAuth();
@@ -25,6 +39,8 @@ const Earnings = () => {
     activeProject: selectedProject,
     isLoadingProjects,
   } = useActiveProject();
+
+  const [dataSource, setDataSource] = useState("supabase");
 
   const [earnings, setEarnings] = useState([]);
   const [isLoadingEarnings, setIsLoadingEarnings] = useState(false);
@@ -51,7 +67,8 @@ const Earnings = () => {
 
     setIsLoadingEarnings(true);
     try {
-      const { data } = await getEarnings({
+      const fetchFn = dataSource === "supabase" ? getEarningsFromSupabase : getEarningsFromApi;
+      const { data } = await fetchFn({
         userId: session.user.id,
         projectId: selectedProjectId,
         sourceType,
@@ -62,7 +79,7 @@ const Earnings = () => {
       toast.error("Unable to load earnings. Please try again.");
     }
     setIsLoadingEarnings(false);
-  }, [sourceType, selectedProjectId, session?.user?.id]);
+  }, [dataSource, sourceType, selectedProjectId, session?.user?.id]);
 
   useEffect(() => {
     loadEarnings();
@@ -74,20 +91,13 @@ const Earnings = () => {
 
   const visibleEarnings = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) {
-      return earnings;
-    }
+    if (!query) return earnings;
 
     return (earnings || []).filter((earning) => {
-      const haystack = [
-        earning?.name,
-        earning?.sourceType,
-        earning?.description,
-      ]
+      const haystack = [earning?.name, earning?.sourceType, earning?.description]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-
       return haystack.includes(query);
     });
   }, [earnings, search]);
@@ -105,54 +115,35 @@ const Earnings = () => {
   };
 
   const handleEarningCreated = (created) => {
-    if (!created) {
-      loadEarnings();
-      return;
-    }
+    if (!created) { loadEarnings(); return; }
 
     const matchesProject = created.projectId === selectedProjectId;
     const matchesSource = sourceType === "all" || created.sourceType === sourceType;
 
     if (matchesProject && matchesSource) {
-      setEarnings((previous) => [
-        {
-          ...created,
-          project: created.project || selectedProject,
-        },
-        ...(previous || []),
-      ]);
+      setEarnings((prev) => [{ ...created, project: created.project || selectedProject }, ...(prev || [])]);
       return;
     }
-
     loadEarnings();
   };
 
   const handleEarningUpdated = (updated) => {
-    if (!updated) {
-      loadEarnings();
-      return;
-    }
-
-    setEarnings((previous) =>
-      (previous || []).map((earning) =>
-        earning.id === updated.id
-          ? {
-              ...updated,
-              project: updated.project || earning.project,
-            }
-          : earning
+    if (!updated) { loadEarnings(); return; }
+    setEarnings((prev) =>
+      (prev || []).map((e) =>
+        e.id === updated.id ? { ...updated, project: updated.project || e.project } : e
       )
     );
   };
 
   const handleEarningDeleted = (deletedId) => {
-    if (!deletedId) {
-      loadEarnings();
-      return;
-    }
-
-    setEarnings((previous) => (previous || []).filter((earning) => earning.id !== deletedId));
+    if (!deletedId) { loadEarnings(); return; }
+    setEarnings((prev) => (prev || []).filter((e) => e.id !== deletedId));
   };
+
+  const getCreateFn = () => dataSource === "supabase" ? createEarningInSupabase : createEarningViaApi;
+  const getUpdateFn = () => dataSource === "supabase" ? updateEarningInSupabase : updateEarningViaApi;
+  const getDeleteFn = () => dataSource === "supabase" ? deleteEarningInSupabase : deleteEarningViaApi;
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>
@@ -222,44 +213,66 @@ const Earnings = () => {
             projects={projects}
             selectedProjectId={selectedProjectId}
             onCreated={handleEarningCreated}
+            createFn={getCreateFn()}
           />
 
           <EditEarningsDialog
             open={isEditOpen}
             onOpenChange={(open) => {
               setIsEditOpen(open);
-              if (!open) {
-                setEarningToEdit(null);
-              }
+              if (!open) setEarningToEdit(null);
             }}
             session={session}
             projects={projects}
             selectedProjectId={selectedProjectId}
             earning={earningToEdit}
             onUpdated={handleEarningUpdated}
+            updateFn={getUpdateFn()}
           />
 
           <DeleteEarningsDialog
             open={isDeleteOpen}
             onOpenChange={(open) => {
               setIsDeleteOpen(open);
-              if (!open) {
-                setEarningToDelete(null);
-              }
+              if (!open) setEarningToDelete(null);
             }}
             session={session}
             earning={earningToDelete}
             onDeleted={handleEarningDeleted}
+            deleteFn={getDeleteFn()}
           />
 
           <Card>
             <CardHeader className="space-y-1">
-              <CardTitle>Revenue Records</CardTitle>
-              <CardDescription>
-                {isProjectGateActive
-                  ? "Select a project to view earnings."
-                  : `Viewing earnings for ${selectedProject?.name || "your selected project"}.`}
-              </CardDescription>
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <CardTitle>Revenue Records</CardTitle>
+                  <CardDescription>
+                    {isProjectGateActive
+                      ? "Select a project to view earnings."
+                      : `Viewing earnings for ${selectedProject?.name || "your selected project"}.`}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground">Source:</span>
+                  <div className="flex rounded-md border border-input overflow-hidden text-xs">
+                    {DATA_SOURCES.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setDataSource(key)}
+                        className={`px-3 py-1.5 font-medium transition-colors ${
+                          dataSource === key
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <EarningsFilters
