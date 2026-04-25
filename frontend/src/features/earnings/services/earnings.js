@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, apiFetchResponse } from "@/lib/apiClient";
 import { supabase } from "@/supabaseClient";
 
 export const EARNING_SOURCE_TYPES = [
@@ -222,4 +222,24 @@ export const deleteEarningViaApi = async (earningId, options = {}) => {
   });
 
   return { data: { id: earningId }, source: "api" };
+};
+
+export const importEarningsCsv = async (projectId, file, columnMapping, options = {}) => {
+  if (!options.userId) throw new Error("You must be signed in to import earnings.");
+  if (!projectId) throw new Error("Project ID is required to import earnings.");
+  if (!file) throw new Error("A CSV file is required to import earnings.");
+  if (!columnMapping || typeof columnMapping !== "object" || Array.isArray(columnMapping)) {
+    throw new Error("A valid column mapping is required to import earnings.");
+  }
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("mapping", JSON.stringify(columnMapping));
+
+  const body = await apiFetch(`/api/projects/${projectId}/earnings/import`, {
+    method: "POST",
+    body: form,
+  });
+
+  return { data: body.data, source: "api" };
 };

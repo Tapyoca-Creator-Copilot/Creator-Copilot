@@ -1,134 +1,22 @@
-import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAuth } from "@/features/auth/context/AuthContext";
+import { importEarningsCsv } from "@/features/earnings/services/earnings";
 import { importExpensesCsv } from "@/features/expenses/services/expenses";
-import FileUploadCard from "@/features/import-data/components/FileUploadCard";
-import HeaderMappingCard from "@/features/import-data/components/HeaderMappingCard";
+import ImportSection from "@/features/import-data/components/ImportSection";
+import { EARNING_FIELD_CONFIG } from "@/features/import-data/constants/earningFieldConfig";
 import { EXPENSE_FIELD_CONFIG } from "@/features/import-data/constants/expenseFieldConfig";
-import { useCsvHeaderMapping } from "@/features/import-data/hooks/useCsvHeaderMapping";
-import { getFileKey } from "@/features/import-data/utils/csvImportUtils";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const ImportDataPage = () => {
   const { session } = UserAuth();
   const { activeProject: selectedProject, isLoadingProjects } = useActiveProject();
-  const [files, setFiles] = useState([]);
-  const [isImporting, setIsImporting] = useState(false);
-
-  const {
-    csvFiles,
-    hasCsvFiles,
-    mappingByFile,
-    selectedMappingFileKey,
-    setSelectedMappingFileKey,
-    isParsingHeaders,
-    activeDetectedHeaders,
-    activeMapping,
-    hasRequiredMappingForFile,
-    allRequiredMappingsReady,
-    setActiveFieldMapping,
-    resetMappings,
-  } = useCsvHeaderMapping({
-    files,
-    fieldConfig: EXPENSE_FIELD_CONFIG,
-  });
-
-  const onFileReject = useCallback((file, message) => {
-    toast.error(message, {
-      description: `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}"`,
-    });
-  }, []);
-
-  const handleClear = () => {
-    setFiles([]);
-    resetMappings();
-  };
-
-  const canImport =
-    Boolean(selectedProject) &&
-    files.length > 0 &&
-    !isImporting &&
-    hasCsvFiles &&
-    allRequiredMappingsReady;
-
-  const handleImport = async () => {
-    if (!selectedProject) {
-      toast.error("Please select a project first");
-      return;
-    }
-
-    if (files.length === 0) {
-      toast.error("Please select files to import");
-      return;
-    }
-
-    if (!hasCsvFiles) {
-      toast.error("Please upload at least one CSV file to import expenses.");
-      return;
-    }
-
-    if (!allRequiredMappingsReady) {
-      const firstIncompleteCsv = csvFiles.find(
-        (file) => !hasRequiredMappingForFile(getFileKey(file))
-      );
-      toast.error(
-        `Please complete required mapping for "${firstIncompleteCsv?.name || "CSV file"}"`
-      );
-      return;
-    }
-
-    setIsImporting(true);
-    try {
-      let importedCount = 0;
-      let skippedCount = 0;
-
-      for (const file of csvFiles) {
-        const fileKey = getFileKey(file);
-        const fieldToHeader = mappingByFile[fileKey] || {};
-
-        const columnMapping = Object.entries(fieldToHeader).reduce((acc, [fieldKey, headerName]) => {
-          if (headerName) {
-            acc[headerName] = fieldKey;
-          }
-          return acc;
-        }, {});
-
-        const result = await importExpensesCsv(
-          selectedProject.id,
-          file,
-          columnMapping,
-          { userId: session?.user?.id }
-        );
-
-        importedCount += Number(result?.data?.imported ?? 0);
-        skippedCount += Number(result?.data?.skipped ?? 0);
-      }
-
-      if (importedCount === 0) {
-        toast.error("No expenses were imported. Check your CSV and mapping.");
-        return;
-      }
-
-      toast.success(
-        `${importedCount} expense${importedCount !== 1 ? "s" : ""} imported to "${selectedProject.name}"${
-          skippedCount > 0 ? ` (${skippedCount} skipped)` : ""
-        }`
-      );
-
-      handleClear();
-    } catch {
-      toast.error("Failed to import files");
-    } finally {
-      setIsImporting(false);
-    }
-  };
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>
@@ -136,18 +24,25 @@ const ImportDataPage = () => {
       <SidebarInset>
         <SiteHeader title="Import Data" />
         <div className="p-6 md:p-8">
-          <div className="mx-auto grid w-full max-w-full gap-6 lg:grid-cols-5 lg:items-start">
-            <div className="space-y-6 lg:col-span-3">
+          <div className="mx-auto grid w-full max-w-full gap-6 lg:items-start">
+
+            <Tabs defaultValue="earnings">
               <Card className="border-black/5 dark:border-white/10">
-                <CardHeader>
-                  <CardTitle>Active Project</CardTitle>
-                  <CardDescription>
-                    {isLoadingProjects
-                      ? "Loading your projects..."
-                      : selectedProject
-                        ? "Imports will use the globally selected project from the header."
-                        : "Create a project to start importing expenses."}
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <CardTitle>Active Project</CardTitle>
+                    <CardDescription>
+                      {isLoadingProjects
+                        ? "Loading your projects..."
+                        : selectedProject
+                          ? "Imports will use the globally selected project from the header."
+                          : "Create a project to start importing data."}
+                    </CardDescription>
+                  </div>
+                  <TabsList className="shrink-0">
+                    <TabsTrigger value="earnings">Earnings</TabsTrigger>
+                    <TabsTrigger value="expenses">Expenses</TabsTrigger>
+                  </TabsList>
                 </CardHeader>
                 <CardContent>
                   {isLoadingProjects ? (
@@ -171,29 +66,27 @@ const ImportDataPage = () => {
                 </CardContent>
               </Card>
 
-              <FileUploadCard
-                selectedProject={selectedProject}
-                files={files}
-                onFileReject={onFileReject}
-                onValueChange={setFiles}
-                onImport={handleImport}
-                onClear={handleClear}
-                isImporting={isImporting}
-                canImport={canImport}
-              />
-            </div>
+              <TabsContent value="earnings" className="mt-6">
+                <ImportSection
+                  selectedProject={selectedProject}
+                  session={session}
+                  fieldConfig={EARNING_FIELD_CONFIG}
+                  importFn={importEarningsCsv}
+                  entityLabel="earning"
+                />
+              </TabsContent>
 
-            <HeaderMappingCard
-              isParsingHeaders={isParsingHeaders}
-              csvFiles={csvFiles}
-              selectedMappingFileKey={selectedMappingFileKey}
-              onSelectMappingFile={setSelectedMappingFileKey}
-              activeDetectedHeaders={activeDetectedHeaders}
-              activeMapping={activeMapping}
-              fieldConfig={EXPENSE_FIELD_CONFIG}
-              onFieldMappingChange={setActiveFieldMapping}
-              getFileKey={getFileKey}
-            />
+              <TabsContent value="expenses" className="mt-6">
+                <ImportSection
+                  selectedProject={selectedProject}
+                  session={session}
+                  fieldConfig={EXPENSE_FIELD_CONFIG}
+                  importFn={importExpensesCsv}
+                  entityLabel="expense"
+                />
+              </TabsContent>
+            </Tabs>
+
           </div>
         </div>
       </SidebarInset>
