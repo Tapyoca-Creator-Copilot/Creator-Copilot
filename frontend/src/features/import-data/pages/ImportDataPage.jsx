@@ -1,30 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
-import { createExpense } from "@/features/expenses/services/expenses";
+import { importExpensesCsv } from "@/features/expenses/services/expenses";
 import FileUploadCard from "@/features/import-data/components/FileUploadCard";
 import HeaderMappingCard from "@/features/import-data/components/HeaderMappingCard";
-import ProjectSelectionCard from "@/features/import-data/components/ProjectSelectionCard";
 import { EXPENSE_FIELD_CONFIG } from "@/features/import-data/constants/expenseFieldConfig";
 import { useCsvHeaderMapping } from "@/features/import-data/hooks/useCsvHeaderMapping";
-import {
-    getFileKey,
-    normalizeDate,
-    parseAmount,
-    parseCsvRecords,
-} from "@/features/import-data/utils/csvImportUtils";
-import { getProjects } from "@/features/projects/services/projects";
+import { getFileKey } from "@/features/import-data/utils/csvImportUtils";
+import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const ImportDataPage = () => {
   const { session } = UserAuth();
-  const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
+  const { activeProject: selectedProject, isLoadingProjects } = useActiveProject();
   const [files, setFiles] = useState([]);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
 
   const {
@@ -45,33 +40,11 @@ const ImportDataPage = () => {
     fieldConfig: EXPENSE_FIELD_CONFIG,
   });
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!session?.user?.id) return;
-
-      try {
-        const { data } = await getProjects({ userId: session.user.id });
-        setProjects(data || []);
-      } catch {
-        toast.error("Failed to load projects");
-      } finally {
-        setIsLoadingProjects(false);
-      }
-    };
-
-    fetchProjects();
-  }, [session?.user?.id]);
-
   const onFileReject = useCallback((file, message) => {
     toast.error(message, {
       description: `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}"`,
     });
   }, []);
-
-  const handleSelectProject = (projectId) => {
-    const project = projects.find((item) => item.id === projectId) || null;
-    setSelectedProject(project);
-  };
 
   const handleClear = () => {
     setFiles([]);
@@ -113,55 +86,38 @@ const ImportDataPage = () => {
 
     setIsImporting(true);
     try {
-      let createdCount = 0;
+      let importedCount = 0;
       let skippedCount = 0;
 
       for (const file of csvFiles) {
         const fileKey = getFileKey(file);
-        const mapping = mappingByFile[fileKey] || {};
-        const text = await file.text();
-        const records = parseCsvRecords(text);
+        const fieldToHeader = mappingByFile[fileKey] || {};
 
-        for (const record of records) {
-          const name = (record[mapping.name] || "").trim();
-          const department = (record[mapping.department] || "").trim();
-          const amount = parseAmount(record[mapping.amount]);
-          const expenseDate = normalizeDate(record[mapping.expenseDate]);
-          const vendor = (record[mapping.vendor] || "").trim() || null;
-          const description = (record[mapping.description] || "").trim() || null;
-
-          if (!name || !department || !expenseDate || !Number.isFinite(amount) || amount <= 0) {
-            skippedCount += 1;
-            continue;
+        const columnMapping = Object.entries(fieldToHeader).reduce((acc, [fieldKey, headerName]) => {
+          if (headerName) {
+            acc[headerName] = fieldKey;
           }
+          return acc;
+        }, {});
 
-          try {
-            await createExpense(
-              {
-                projectId: selectedProject.id,
-                name,
-                amount,
-                department,
-                expenseDate,
-                vendor,
-                description,
-              },
-              { userId: session?.user?.id }
-            );
-            createdCount += 1;
-          } catch {
-            skippedCount += 1;
-          }
-        }
+        const result = await importExpensesCsv(
+          selectedProject.id,
+          file,
+          columnMapping,
+          { userId: session?.user?.id }
+        );
+
+        importedCount += Number(result?.data?.imported ?? 0);
+        skippedCount += Number(result?.data?.skipped ?? 0);
       }
 
-      if (createdCount === 0) {
-        toast.error("No expenses were imported. Check mapping and row values.");
+      if (importedCount === 0) {
+        toast.error("No expenses were imported. Check your CSV and mapping.");
         return;
       }
 
       toast.success(
-        `${createdCount} expense${createdCount !== 1 ? "s" : ""} imported to "${selectedProject.name}"${
+        `${importedCount} expense${importedCount !== 1 ? "s" : ""} imported to "${selectedProject.name}"${
           skippedCount > 0 ? ` (${skippedCount} skipped)` : ""
         }`
       );
@@ -182,12 +138,38 @@ const ImportDataPage = () => {
         <div className="p-6 md:p-8">
           <div className="mx-auto grid w-full max-w-full gap-6 lg:grid-cols-5 lg:items-start">
             <div className="space-y-6 lg:col-span-3">
-              <ProjectSelectionCard
-                isLoadingProjects={isLoadingProjects}
-                projects={projects}
-                selectedProject={selectedProject}
-                onSelectProject={handleSelectProject}
-              />
+              <Card className="border-black/5 dark:border-white/10">
+                <CardHeader>
+                  <CardTitle>Active Project</CardTitle>
+                  <CardDescription>
+                    {isLoadingProjects
+                      ? "Loading your projects..."
+                      : selectedProject
+                        ? "Imports will use the globally selected project from the header."
+                        : "Create a project to start importing expenses."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingProjects ? (
+                    <p className="text-sm text-muted-foreground">Loading projects...</p>
+                  ) : selectedProject ? (
+                    <div className="rounded-md border border-input/60 p-3">
+                      <p className="text-sm text-muted-foreground">Importing into</p>
+                      <p className="font-medium">{selectedProject.name}</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-input/60 p-4">
+                      <p className="font-medium">No project available</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Create your first project and it will be selected automatically.
+                      </p>
+                      <Button className="mt-3" asChild>
+                        <Link to="/projects/new">Create New Project</Link>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               <FileUploadCard
                 selectedProject={selectedProject}

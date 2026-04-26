@@ -28,7 +28,8 @@ export const GoogleAuthButton = ({ onClick, children }) => {
     <Button
       type="button"
       onClick={onClick}
-      className="h-10 w-full border border-[#dadce0] bg-white px-4 font-medium text-[#3c4043] shadow-none hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-[#5f6368] dark:bg-[#131314] dark:text-[#e8eaed] dark:hover:bg-[#252526] dark:hover:text-[#e8eaed]"
+      variant="outline"
+      className="h-10 w-full px-4 font-medium"
     >
       <span className="flex w-full items-center justify-center gap-3">
         <GoogleMark />

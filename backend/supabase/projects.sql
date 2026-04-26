@@ -13,9 +13,17 @@ create table if not exists public.projects (
   project_type text not null check (project_type in ('Music', 'Film')),
   start_date timestamptz not null,
   end_date timestamptz not null,
+  is_archived boolean not null default false,
+  archived_at timestamptz,
   created_at timestamptz not null default now(),
   constraint projects_end_after_start check (end_date >= start_date)
 );
+
+alter table public.projects
+  add column if not exists is_archived boolean not null default false;
+
+alter table public.projects
+  add column if not exists archived_at timestamptz;
 
 create index if not exists projects_user_id_idx on public.projects(user_id);
 create index if not exists projects_created_at_idx on public.projects(created_at desc);

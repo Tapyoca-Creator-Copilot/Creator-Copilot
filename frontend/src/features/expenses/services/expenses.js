@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, apiFetchResponse } from "@/lib/apiClient";
 
 export const EXPENSE_DEPARTMENTS = [
   "Marketing",
@@ -155,4 +155,75 @@ export const deleteExpense = async (expenseId, options = {}) => {
 export const getBudgetSummary = async (projectId) => {
   const body = await apiFetch(`/api/projects/${projectId}/budget-summary`);
   return body.data;
+};
+
+const getFilenameFromDisposition = (disposition) => {
+  if (!disposition || typeof disposition !== "string") {
+    return null;
+  }
+
+  const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+  const raw = match?.[1] || match?.[2];
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+};
+
+export const exportProjectExpensesCsv = async (projectId, options = {}) => {
+  if (!options.userId) {
+    throw new Error("You must be signed in to export expenses.");
+  }
+
+  if (!projectId) {
+    throw new Error("Project ID is required to export expenses.");
+  }
+
+  const res = await apiFetchResponse(`/api/projects/${projectId}/expenses/export`, {
+    method: "GET",
+  });
+
+  const blob = await res.blob();
+  const filename =
+    getFilenameFromDisposition(res.headers.get("content-disposition")) ||
+    `expenses_${projectId}.csv`;
+
+  return { blob, filename };
+};
+
+export const importExpensesCsv = async (projectId, file, columnMapping, options = {}) => {
+  if (!options.userId) {
+    throw new Error("You must be signed in to import expenses.");
+  }
+
+  if (!projectId) {
+    throw new Error("Project ID is required to import expenses.");
+  }
+
+  if (!file) {
+    throw new Error("A CSV file is required to import expenses.");
+  }
+
+  if (!columnMapping || typeof columnMapping !== "object" || Array.isArray(columnMapping)) {
+    throw new Error("A valid column mapping is required to import expenses.");
+  }
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("mapping", JSON.stringify(columnMapping));
+
+  const body = await apiFetch(`/api/projects/${projectId}/expenses/import`, {
+    method: "POST",
+    body: form,
+  });
+
+  return {
+    data: body.data,
+    source: "api",
+  };
 };

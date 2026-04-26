@@ -1,33 +1,29 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+/* Tailwind v4 source hints for Tremor + local chart utility class maps. */
+@source "../node_modules/@tremor/react";
+@source "./lib/chartUtils.js";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
     --color-pearl-beige: #f4e9c1ff;
-    --color-pearl-beige-hover: #e8deb3ff;
-    --color-chocolate: #c87343ff;
-    --color-chocolate-hover: #b86535ff;
-    --color-shadow-grey: #272727ff;
-    --color-shadow-grey-hover: #3d3d3dff;
-    --color-bright-marine: #1b6dadff;
-    --color-bright-marine-hover: #1554a0ff;
-    --color-indigo-velvet: #552583ff;
-    --color-indigo-velvet-hover: #6b2fa3ff;
     --color-linen: #fbf3ebff;
-    --color-linen-hover: rgba(0, 0, 0, 0.030);
-    --color-sage-green: #72993eff;
-    --color-sage-green-hover: #5f8235ff;
+    --color-chocolate: #c87343ff;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   transition: background-color 180ms ease, color 180ms ease;
 }
 
 @theme inline {
+    --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -66,25 +62,27 @@ body {
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+    --color-destructive-foreground: var(--destructive-foreground);
 }
 
 :root {
     --radius: 0.625rem;
-    --background: #f4e9c1ff;
+    --background: #FBF3EB;
     --foreground: #272727ff;
     --card: #FBF3EB;
     --card-foreground: #272727ff;
     --popover: #FBF3EB;
     --popover-foreground: #272727ff;
-    --primary: rgb(100, 100, 90);
+    --primary: #C87343;
     --primary-foreground: #FBF3EB;
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
+    --secondary:#272727ff;
+    --secondary-foreground: #FBF3EB;
+    --muted: rgba(0, 0, 0, 0.03);
     --muted-foreground: oklch(0.556 0 0);
     --accent: rgba(0, 0, 0, 0.030);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.51 0.19 28);
+    --destructive-foreground: #FBF3EB;
     --border: oklch(0.922 0 0);
     --input: rgb(200, 190, 180);
     --ring: rgba(0, 0, 0, 0.1);
@@ -111,15 +109,16 @@ body {
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.205 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
+    --primary: #C87343;
     --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
+    --secondary: #f4eadb;
+    --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(0.708 0 0);
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
+    --destructive: oklch(61.944% 0.21639 27.182);
+    --destructive-foreground: oklch(0.205 0 0);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
@@ -137,19 +136,7 @@ body {
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
     --color-pearl-beige: #1f1a16;
-    --color-pearl-beige-hover: #2c2520;
-    --color-chocolate: #c87343ff;
-    --color-chocolate-hover: rgb(233, 149, 101);
-    --color-shadow-grey: #f4eadb;
-    --color-shadow-grey-hover: #ffffff;
-    --color-bright-marine: #7eb1db;
-    --color-bright-marine-hover: #9cc7ea;
-    --color-indigo-velvet: #af88e7;
-    --color-indigo-velvet-hover: #c8a7f6;
     --color-linen: #24201c;
-    --color-linen-hover: rgba(255, 255, 255, 0.06);
-    --color-sage-green: #9abf7a;
-    --color-sage-green-hover: #b4d291;
 }
 
 @layer base {
@@ -163,7 +150,7 @@ body {
 
 .blur-background {
   position: relative;
-  background-color: var(--background);
+  background-color: #f4e9c1ff;
   background-image:
     linear-gradient(90deg, var(--sidebar) 0%, var(--sidebar) .05%, transparent 16%),
     radial-gradient(at 95% 70%, #F4E9C1 0%, transparent 60%),

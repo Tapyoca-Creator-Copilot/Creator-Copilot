@@ -1,20 +1,20 @@
-import * as React from "react"
 import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react"
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+} from "lucide-react";
+import * as React from "react";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 function Calendar({
   className,
@@ -32,7 +32,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-linen group/calendar p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-background group/calendar rounded-lg border border-border p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -70,7 +70,7 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md",
+          "relative has-focus:border-ring border border-input has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn("absolute bg-popover inset-0 opacity-0", defaultClassNames.dropdown),
@@ -199,10 +199,10 @@ function CalendarDropdown({ value, onChange, options = [], disabled }) {
       }>
       <SelectTrigger
         size="sm"
-        className="h-8 w-fit min-w-24 gap-1 rounded-md border border-input bg-linen px-2 text-sm font-medium shadow-none">
+        className="h-9 w-full min-w-24 gap-1 rounded-md border border-input bg-background px-2 text-sm font-medium">
         <SelectValue>{selectedOption?.label}</SelectValue>
       </SelectTrigger>
-      <SelectContent portal={false} position="popper" className="bg-linen">
+        <SelectContent portal={false} position="popper" className="bg-background">
         {options.map((option) => (
           <SelectItem
             key={String(option.value)}
@@ -216,4 +216,5 @@ function CalendarDropdown({ value, onChange, options = [], disabled }) {
   )
 }
 
-export { Calendar, CalendarDayButton }
+export { Calendar, CalendarDayButton };
+

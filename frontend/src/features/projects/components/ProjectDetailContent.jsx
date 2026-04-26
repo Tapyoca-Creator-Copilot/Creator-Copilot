@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatBudget, formatDate } from "@/features/projects/utils/formatters";
 
-export const ProjectDetailContent = ({ project, onBack }) => {
+export const ProjectDetailContent = ({ project, onBack, onArchive, isArchiving = false }) => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-start justify-between gap-4">
@@ -79,6 +79,9 @@ export const ProjectDetailContent = ({ project, onBack }) => {
       <div className="flex gap-3">
         <Button variant="default" onClick={onBack}>
           Back to Projects
+        </Button>
+        <Button variant="destructive" onClick={onArchive} disabled={isArchiving}>
+          {isArchiving ? "Archiving..." : "Archive Project"}
         </Button>
       </div>
     </div>

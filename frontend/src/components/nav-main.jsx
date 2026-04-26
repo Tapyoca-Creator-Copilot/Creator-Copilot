@@ -7,7 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function NavMain({
   items
@@ -20,7 +20,7 @@ export function NavMain({
             <SidebarMenuButton
               asChild
               tooltip="Create New Project"
-              className="bg-shadow-grey text-primary-foreground hover:bg-shadow-grey-hover hover:text-primary-foreground active:bg-shadow-grey-hover active:text-primary-foreground min-w-8 duration-200 ease-linear">
+              className="min-w-8 duration-200 ease-linear bg-foreground text-secondary-foreground hover:bg-foreground/90 hover:text-secondary-foreground focus-visible:bg-foreground/90 focus-visible:text-secondary-foreground active:bg-foreground/90 active:text-secondary-foreground">
               <Link to="/projects/new">
                 <IconCirclePlusFilled />
                 <span>Create New Project</span>

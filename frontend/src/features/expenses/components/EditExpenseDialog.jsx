@@ -1,19 +1,19 @@
-import React, { useEffect, useMemo } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { CalendarIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { EXPENSE_DEPARTMENTS, updateExpense, } from "@/features/expenses/services/expenses";
 import { DESCRIPTION_LIMIT, buildEditDefaultValues, expenseSchema, formatDateLabel, formatLocalYmd, parseLocalYmd, } from "@/features/expenses/utils/expenseForm";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarIcon } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const EditExpenseDialog = ({
   open,
@@ -86,7 +86,7 @@ const EditExpenseDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-linen dark:bg-card">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Expense</DialogTitle>
           <DialogDescription>Update this transaction for the selected project.</DialogDescription>
@@ -103,11 +103,11 @@ const EditExpenseDialog = ({
                     <FormLabel>Project</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger className="w-full bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50">
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder={projectOptions.length ? "Select a project" : "No projects found"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent align="start" className="bg-linen">
+                      <SelectContent align="start">
                         {projectOptions.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name}
@@ -129,7 +129,7 @@ const EditExpenseDialog = ({
                     <FormControl>
                       <Input
                         placeholder="e.g. Location scout deposit"
-                        className="bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50"
+                        
                         {...field}
                         maxLength={120}
                       />
@@ -150,7 +150,7 @@ const EditExpenseDialog = ({
                         inputMode="decimal"
                         placeholder="e.g. 245.50"
                         autoComplete="off"
-                        className="bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50"
+                        
                         {...field}
                       />
                     </FormControl>
@@ -168,11 +168,11 @@ const EditExpenseDialog = ({
                     <FormLabel>Department</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger className="w-full bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50">
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Choose department" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent align="start" className="bg-linen">
+                      <SelectContent align="start">
                         {EXPENSE_DEPARTMENTS.map((department) => (
                           <SelectItem key={department} value={department}>
                             {department}
@@ -198,7 +198,7 @@ const EditExpenseDialog = ({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "w-full justify-between border-input bg-linen font-normal hover:bg-linen-hover hover:text-foreground dark:bg-input/30 dark:hover:bg-input/50",
+                              "w-full justify-between border-input font-normal hover:text-foreground",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -207,7 +207,7 @@ const EditExpenseDialog = ({
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-linen" align="start" side="top" avoidCollisions={false}>
+                      <PopoverContent className="w-auto p-0" align="start" side="top" avoidCollisions={false}>
                         <Calendar
                           mode="single"
                           selected={field.value ? parseLocalYmd(field.value) ?? undefined : undefined}
@@ -236,7 +236,7 @@ const EditExpenseDialog = ({
                     <FormControl>
                       <Input
                         placeholder="e.g. B&H Photo"
-                        className="bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50"
+                        
                         {...field}
                         maxLength={120}
                       />
@@ -255,7 +255,7 @@ const EditExpenseDialog = ({
                     <FormControl>
                       <Input
                         placeholder="Optional category"
-                        className="bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50"
+                        
                         {...field}
                         maxLength={80}
                       />
@@ -276,7 +276,7 @@ const EditExpenseDialog = ({
                       <Input
                         type="url"
                         placeholder="https://..."
-                        className="bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50"
+                        
                         {...field}
                       />
                     </FormControl>
@@ -297,7 +297,6 @@ const EditExpenseDialog = ({
                         placeholder="Add context for this expense"
                         rows={4}
                         maxLength={DESCRIPTION_LIMIT}
-                        className="bg-linen hover:bg-linen-hover dark:bg-input/30 dark:hover:bg-input/50"
                         {...field}
                       />
                     </FormControl>
@@ -317,7 +316,7 @@ const EditExpenseDialog = ({
               <Button
                 type="button"
                 variant="outline"
-                className="bg-linen hover:bg-linen-hover"
+                
                 onClick={() => onOpenChange?.(false)}
                 disabled={isSubmitting}
               >

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { deleteExpense } from "@/features/expenses/services/expenses";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const DeleteExpenseDialog = ({ open, onOpenChange, session, expense, onDeleted }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -30,7 +30,7 @@ const DeleteExpenseDialog = ({ open, onOpenChange, session, expense, onDeleted }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-linen dark:bg-card">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Delete expense?</DialogTitle>
           <DialogDescription>
@@ -42,13 +42,12 @@ const DeleteExpenseDialog = ({ open, onOpenChange, session, expense, onDeleted }
           <Button
             type="button"
             variant="outline"
-            className="bg-linen hover:bg-linen-hover"
             onClick={() => onOpenChange?.(false)}
             disabled={isDeleting}
           >
             Cancel
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700 text-linen"
+          <Button
             type="button"
             variant="destructive"
             onClick={handleConfirmDelete}

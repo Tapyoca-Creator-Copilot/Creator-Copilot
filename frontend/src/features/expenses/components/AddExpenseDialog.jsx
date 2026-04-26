@@ -84,7 +84,7 @@ const AddExpenseDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-linen dark:bg-card">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add Expense</DialogTitle>
           <DialogDescription>
@@ -101,13 +101,13 @@ const AddExpenseDialog = ({
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Project</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={field.onChange} disabled>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={projectOptions.length ? "Select a project" : "No projects found"} />
+                          <SelectValue placeholder={projectOptions.length ? "Active project" : "No projects found"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent align="start" className="bg-linen">
+                      <SelectContent align="start">
                         {projectOptions.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name}
@@ -170,7 +170,7 @@ const AddExpenseDialog = ({
                           <SelectValue placeholder="Choose department" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent align="start" className="bg-linen">
+                      <SelectContent align="start">
                         {EXPENSE_DEPARTMENTS.map((department) => (
                           <SelectItem key={department} value={department}>
                             {department}
@@ -196,7 +196,7 @@ const AddExpenseDialog = ({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "w-full justify-between border-input bg-linen font-normal",
+                              "w-full justify-between font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -205,7 +205,7 @@ const AddExpenseDialog = ({
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-linen" align="start" side="top" avoidCollisions={false}>
+                      <PopoverContent className="w-auto p-0" align="start" side="top" avoidCollisions={false}>
                         <Calendar
                           mode="single"
                           selected={field.value ? parseLocalYmd(field.value) ?? undefined : undefined}
@@ -292,7 +292,7 @@ const AddExpenseDialog = ({
               <Button
                 type="button"
                 variant="outline"
-                className="bg-linen hover:bg-linen-hover"
+                
                 onClick={() => onOpenChange?.(false)}
                 disabled={isSubmitting}
               >

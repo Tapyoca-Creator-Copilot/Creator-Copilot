@@ -7,6 +7,7 @@ import Signup from "@/features/auth/pages/Signup";
 import Dashboard from "@/features/dashboard/pages/Dashboard";
 import Expenses from "@/features/dashboard/pages/Expenses";
 import ImportDataPage from "@/features/import-data/pages/ImportDataPage";
+import ArchivedProjectsPage from "@/features/projects/pages/ArchivedProjectsPage";
 import CreateProjectPage from "@/features/projects/pages/CreateProjectPage";
 import ProjectDetailPage from "@/features/projects/pages/ProjectDetailPage";
 import ProjectsPage from "@/features/projects/pages/ProjectsPage";
@@ -29,6 +30,14 @@ export const appRouter = createBrowserRouter([
     element: (
       <PrivateRoute>
         <ProjectsPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/projects/archived",
+    element: (
+      <PrivateRoute>
+        <ArchivedProjectsPage />
       </PrivateRoute>
     ),
   },

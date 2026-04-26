@@ -40,11 +40,11 @@ const Signin = () => {
             alt="Creator Copilot icon"
             className="h-28 w-28 min-[980px]:h-32 min-[980px]:w-32"
           />
-          <h1 className="text-4xl font-semibold tracking-tight text-shadow-grey min-[980px]:text-5xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-foreground min-[980px]:text-5xl">
             Creator Copilot
           </h1>
           <div className="flex items-center gap-2">
-            <p className="text-xl font-medium text-shadow-grey-hover min-[980px]:text-3xl">
+            <p className="text-xl font-medium text-muted-foreground min-[980px]:text-3xl">
               powered by
             </p>
             <img
@@ -72,12 +72,12 @@ const Signin = () => {
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input id="password" ref={passwordInputRef} type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={handlePasswordChange} />
-                <Button type="button" className="absolute top-0 right-0 px-3 text-primary hover:bg-transparent hover:text-primary bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                <Button type="button" variant="ghost" className="absolute top-0 right-0 px-3 text-muted-foreground hover:bg-transparent hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                 </Button>
               </div>
               {error && (
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-destructive">{error}</p>
               )}
             </div>
           </div>
@@ -87,7 +87,7 @@ const Signin = () => {
             <GoogleAuthButton onClick={handleGoogleSignIn}>Sign in with Google</GoogleAuthButton>
             <p className="mt-4 text-sm">
               Don't have an account?
-              <Link to="/signup" className="font-semibold text-chocolate hover:chocolate-hover ml-1">Sign up</Link>
+              <Link to="/signup" className="ml-1 font-semibold text-primary hover:underline">Sign up</Link>
             </p>
           </div>
         </form>

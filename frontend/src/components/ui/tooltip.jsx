@@ -24,11 +24,20 @@ function TooltipTrigger({
 function TooltipContent({
   className,
   arrowClassName,
+  variant = "default",
   disableAnimation = false,
   sideOffset = 0,
   children,
   ...props
 }) {
+  const contentVariantClassName =
+    variant === "chart"
+      ? "bg-background text-foreground border border-border"
+      : "bg-background text-foreground border border-border";
+
+  const arrowVariantClassName =
+    variant === "chart" ? "bg-background fill-background" : "bg-background fill-background";
+
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
@@ -36,15 +45,17 @@ function TooltipContent({
         sideOffset={sideOffset}
         className={cn(
           disableAnimation
-            ? "bg-foreground text-background z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance"
-            : "bg-foreground text-background animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance",
+            ? "z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance"
+            : "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance",
+          contentVariantClassName,
           className
         )}
         {...props}>
         {children}
         <TooltipPrimitive.Arrow
           className={cn(
-            "bg-foreground fill-foreground z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px]",
+            "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] border border-border",
+            arrowVariantClassName,
             arrowClassName
           )} />
       </TooltipPrimitive.Content>
