@@ -1,11 +1,11 @@
 import {
   IconArchive,
-  IconChartBar,
-  IconDashboard,
   IconFileImport,
   IconFolder,
+  IconLayoutDashboard,
   IconMoneybagMinus,
-  IconSettings,
+  IconMoneybagPlus,
+  IconSettings
 } from "@tabler/icons-react";
 
 import tapyocaLogo from "@/assets/tapyoca-logo-clean.svg";
@@ -27,19 +27,9 @@ import { UserAuth } from "@/features/auth/context/AuthContext";
 const data = {
   navMain: [
     {
-      title: "Overview",
+      title: "Dashboard",
       url: "/dashboard",
-      icon: IconDashboard,
-    },
-    {
-      title: "Expenses",
-      url: "/expenses",
-      icon: IconMoneybagMinus,
-    },
-    {
-      title: "Graphs",
-      url: "#",
-      icon: IconChartBar,
+      icon: IconLayoutDashboard,
     },
     {
       title: "Projects",
@@ -47,14 +37,24 @@ const data = {
       icon: IconFolder,
     },
     {
-      title: "Archived Projects",
-      url: "/projects/archived",
-      icon: IconArchive,
+      title: "Earnings",
+      url: "/earnings",
+      icon: IconMoneybagPlus,
+    },
+    {
+      title: "Expenses",
+      url: "/expenses",
+      icon: IconMoneybagMinus,
     },
     {
       title: "Import Data",
       url: "/import-data",
       icon: IconFileImport,
+    },
+    {
+      title: "Archived Projects",
+      url: "/projects/archived",
+      icon: IconArchive,
     },
   ],
   navSecondary: [

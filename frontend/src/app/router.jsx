@@ -5,6 +5,7 @@ import PrivateRoute from "@/features/auth/components/PrivateRoute";
 import Signin from "@/features/auth/pages/Signin";
 import Signup from "@/features/auth/pages/Signup";
 import Dashboard from "@/features/dashboard/pages/Dashboard";
+import Earnings from "@/features/dashboard/pages/Earnings";
 import Expenses from "@/features/dashboard/pages/Expenses";
 import ImportDataPage from "@/features/import-data/pages/ImportDataPage";
 import ArchivedProjectsPage from "@/features/projects/pages/ArchivedProjectsPage";
@@ -62,6 +63,14 @@ export const appRouter = createBrowserRouter([
     element: (
       <PrivateRoute>
         <Expenses />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/earnings",
+    element: (
+      <PrivateRoute>
+        <Earnings />
       </PrivateRoute>
     ),
   },

@@ -6,23 +6,24 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { EXPENSE_DEPARTMENTS, createExpense } from "@/features/expenses/services/expenses";
-import { DESCRIPTION_LIMIT, buildAddDefaultValues, expenseSchema, formatDateLabel, formatLocalYmd, parseLocalYmd, } from "@/features/expenses/utils/expenseForm";
+import { EARNING_SOURCE_TYPES } from "@/features/earnings/services/earnings";
+import { DESCRIPTION_LIMIT, buildAddDefaultValues, earningSchema, formatDateLabel, formatLocalYmd, parseLocalYmd } from "@/features/earnings/utils/earningsForm";
 import { cn } from "@/lib/utils";
 
-const AddExpenseDialog = ({
+const AddEarningsDialog = ({
   open,
   onOpenChange,
   session,
   projects = [],
   selectedProjectId,
   onCreated,
+  createFn,
 }) => {
   const currentYear = new Date().getFullYear();
   const minCalendarYear = currentYear - 36;
@@ -34,7 +35,7 @@ const AddExpenseDialog = ({
   );
 
   const form = useForm({
-    resolver: zodResolver(expenseSchema({ departments: EXPENSE_DEPARTMENTS })),
+    resolver: zodResolver(earningSchema({ sourceTypes: EARNING_SOURCE_TYPES })),
     defaultValues,
     mode: "onBlur",
   });
@@ -48,7 +49,6 @@ const AddExpenseDialog = ({
       return;
     }
 
-    // When opening, prefer the currently selected project.
     if (selectedProjectId) {
       form.setValue("projectId", selectedProjectId, { shouldValidate: true });
     }
@@ -56,27 +56,25 @@ const AddExpenseDialog = ({
 
   const handleSubmit = async (values) => {
     try {
-      const result = await createExpense(
+      const result = await createFn(
         {
           projectId: values.projectId,
           name: values.name,
           amount: Number(values.amount),
-          department: values.department,
-          category: values.category || null,
+          sourceType: values.sourceType,
           description: values.description || null,
-          expenseDate: values.expenseDate,
-          vendor: values.vendor || null,
-          receiptUrl: values.receiptUrl || null,
+          earningDate: values.earningDate,
+          contractUrl: values.contractUrl || null,
         },
         { userId: session?.user?.id }
       );
 
-      toast.success("Expense added");
+      toast.success("Earning added");
       onCreated?.(result?.data);
       onOpenChange?.(false);
       form.reset(buildAddDefaultValues({ selectedProjectId, projects }));
     } catch (error) {
-      toast.error(error?.message || "Unable to add expense. Please try again.");
+      toast.error(error?.message || "Unable to add earning. Please try again.");
     }
   };
 
@@ -86,9 +84,9 @@ const AddExpenseDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add Expense</DialogTitle>
+          <DialogTitle>Add Earning</DialogTitle>
           <DialogDescription>
-            Log a transaction for the selected project. Fields marked required help keep reporting accurate.
+            Log income for the selected project. Fields marked required help keep your revenue accurate.
           </DialogDescription>
         </DialogHeader>
 
@@ -125,10 +123,10 @@ const AddExpenseDialog = ({
                 name="name"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Expense Title</FormLabel>
+                    <FormLabel>Earning Title</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g. Location scout deposit"
+                        placeholder="e.g. Summer Tour Night 1"
                         {...field}
                         maxLength={120}
                       />
@@ -147,12 +145,12 @@ const AddExpenseDialog = ({
                     <FormControl>
                       <Input
                         inputMode="decimal"
-                        placeholder="e.g. 245.50"
+                        placeholder="e.g. 2500.00"
                         autoComplete="off"
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>Enter the total paid for this item.</FormDescription>
+                    <FormDescription>Enter the total earned for this item.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -160,20 +158,20 @@ const AddExpenseDialog = ({
 
               <FormField
                 control={form.control}
-                name="department"
+                name="sourceType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department</FormLabel>
+                    <FormLabel>Source Type</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Choose department" />
+                          <SelectValue placeholder="Choose source" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent align="start">
-                        {EXPENSE_DEPARTMENTS.map((department) => (
-                          <SelectItem key={department} value={department}>
-                            {department}
+                        {EARNING_SOURCE_TYPES.map((source) => (
+                          <SelectItem key={source} value={source}>
+                            {source}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -185,10 +183,10 @@ const AddExpenseDialog = ({
 
               <FormField
                 control={form.control}
-                name="expenseDate"
+                name="earningDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Expense Date</FormLabel>
+                    <FormLabel>Earning Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -227,28 +225,10 @@ const AddExpenseDialog = ({
 
               <FormField
                 control={form.control}
-                name="vendor"
+                name="contractUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Vendor / Payee</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. B&H Photo"
-                        {...field}
-                        maxLength={120}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="receiptUrl"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Receipt URL</FormLabel>
+                    <FormLabel>Contract / Invoice URL</FormLabel>
                     <FormControl>
                       <Input
                         type="url"
@@ -256,7 +236,7 @@ const AddExpenseDialog = ({
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>Receipt file uploads will be added later.</FormDescription>
+                    <FormDescription>Optional. File uploads coming soon.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -270,7 +250,7 @@ const AddExpenseDialog = ({
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Add context for this expense"
+                        placeholder="Add context for this earning"
                         rows={4}
                         maxLength={DESCRIPTION_LIMIT}
                         {...field}
@@ -298,7 +278,7 @@ const AddExpenseDialog = ({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting || projectOptions.length === 0}>
-                {isSubmitting ? "Saving..." : "Add Expense"}
+                {isSubmitting ? "Saving..." : "Add Earning"}
               </Button>
             </DialogFooter>
           </form>
@@ -308,4 +288,4 @@ const AddExpenseDialog = ({
   );
 };
 
-export default AddExpenseDialog;
+export default AddEarningsDialog;
