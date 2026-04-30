@@ -1,8 +1,8 @@
 tags:
-  - Expenses
-summary: Create an expense
+  - Earnings
+summary: Create an earning
 description: >
-  Add a new expense to a project. Requires authentication.
+  Add a new earning to a project. Requires authentication.
 security:
   - BearerAuth: []
 parameters:
@@ -19,39 +19,36 @@ parameters:
       required:
         - name
         - amount
-        - department
-        - expenseDate
+        - sourceType
+        - earningDate
       properties:
         name:
           type: string
-          example: Studio session
+          example: Spotify royalties Q1
         amount:
           type: number
-          example: 250.00
-        department:
+          example: 1250.50
+        sourceType:
           type: string
-          example: Studio / Venue
+          example: Streaming
         description:
           type: string
-          example: 4-hour session at Abbey Road
-        expenseDate:
+          example: Q1 2026 streaming payout
+        earningDate:
           type: string
           format: date
-          example: "2026-02-25"
-        vendor:
+          example: "2026-04-15"
+        contractUrl:
           type: string
-          example: Abbey Road Studios
-        receiptUrl:
-          type: string
-          example: https://example.com/receipt.pdf
+          example: https://example.com/contract.pdf
 responses:
   201:
-    description: Expense created successfully
+    description: Earning created successfully
     schema:
       type: object
       properties:
         data:
-          $ref: "#/definitions/Expense"
+          $ref: "#/definitions/Earning"
   400:
     description: Validation error or missing fields
   401:

@@ -1,0 +1,31 @@
+tags:
+  - Earnings
+summary: Delete an earning
+description: >
+  Permanently delete an earning. Must belong to the authenticated user.
+security:
+  - BearerAuth: []
+parameters:
+  - name: project_id
+    in: path
+    type: string
+    required: true
+    description: UUID of the project
+  - name: earning_id
+    in: path
+    type: string
+    required: true
+    description: UUID of the earning
+responses:
+  200:
+    description: Earning deleted
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Earning deleted
+  404:
+    description: Earning not found
+  401:
+    description: Missing or invalid token

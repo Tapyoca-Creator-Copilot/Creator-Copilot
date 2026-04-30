@@ -1,36 +1,19 @@
 import csv
 import io
-import re
-from datetime import datetime
 
 from services.supabase_client import supabase
-
-MAX_IMPORT_ROWS = 500
+from services.csv_helpers import (
+    MAX_IMPORT_ROWS,
+    parse_date,
+    parse_amount,
+    get_project_date_range,
+    date_in_range,
+)
 
 _VALID_EXPENSE_FIELDS = {
     "name", "amount", "department", "expenseDate",
-    "category", "description", "vendor", "receiptUrl",
+    "description", "vendor", "receiptUrl",
 }
-
-_DATE_PATTERNS = [
-    (re.compile(r"^\d{4}-\d{2}-\d{2}$"), "%Y-%m-%d"),
-    (re.compile(r"^\d{1,2}/\d{1,2}/\d{4}$"), "%m/%d/%Y"),
-    (re.compile(r"^\d{1,2}-\d{1,2}-\d{4}$"), "%m-%d-%Y"),
-]
-
-
-def _parse_date(value):
-    """Try several common date formats and return YYYY-MM-DD or None."""
-    if not value:
-        return None
-    value = value.strip()
-    for pattern, fmt in _DATE_PATTERNS:
-        if pattern.match(value):
-            try:
-                return datetime.strptime(value, fmt).strftime("%Y-%m-%d")
-            except ValueError:
-                continue
-    return None
 
 
 def _normalize_expense(row):
@@ -54,7 +37,6 @@ def _normalize_expense(row):
         "name": row.get("name"),
         "amount": float(row.get("amount", 0)),
         "department": row.get("department"),
-        "category": row.get("category"),
         "description": row.get("description"),
         "expenseDate": row.get("expense_date"),
         "vendor": row.get("vendor"),
@@ -66,7 +48,7 @@ def _normalize_expense(row):
 
 
 EXPENSE_SELECT = (
-    "id, user_id, project_id, name, amount, department, category, "
+    "id, user_id, project_id, name, amount, department, "
     "description, expense_date, vendor, receipt_url, created_at, updated_at, "
     "projects ( id, name, currency )"
 )
@@ -79,7 +61,6 @@ def create_expense(user_id, project_id, payload):
         "name": payload["name"].strip(),
         "amount": payload["amount"],
         "department": payload["department"],
-        "category": (payload.get("category") or "").strip() or None,
         "description": (payload.get("description") or "").strip() or None,
         "expense_date": payload["expenseDate"],
         "vendor": (payload.get("vendor") or "").strip() or None,
@@ -132,7 +113,7 @@ def get_expense_by_id(user_id, project_id, expense_id):
 
 def update_expense(user_id, project_id, expense_id, payload):
     allowed = {
-        "name", "amount", "department", "category",
+        "name", "amount", "department",
         "description", "expenseDate", "vendor", "receiptUrl", "projectId",
     }
     camel_to_snake = {
@@ -221,16 +202,14 @@ def get_budget_summary(user_id, project_id):
 def import_expenses_from_csv(user_id, project_id, file_stream, column_mapping):
     """
     Parse a CSV file using the provided column_mapping and bulk-insert
-    valid rows into the expenses table.
-
-    column_mapping maps CSV header names to expense field names, e.g.:
-        {"Date": "expenseDate", "Description": "name", ...}
-
-    Returns {"imported": int, "skipped": int, "errors": [...]}.
+    valid rows into the expenses table. Rejects rows whose date falls outside
+    the project's start_date/end_date range.
     """
     for target in column_mapping.values():
         if target not in _VALID_EXPENSE_FIELDS:
             raise ValueError(f"Invalid mapping target: '{target}'")
+
+    project_start, project_end = get_project_date_range(user_id, project_id)
 
     text = file_stream.read()
     if isinstance(text, bytes):
@@ -240,9 +219,7 @@ def import_expenses_from_csv(user_id, project_id, file_stream, column_mapping):
     if not reader.fieldnames:
         raise ValueError("CSV file is empty or has no header row")
 
-    missing_cols = [
-        src for src in column_mapping if src not in reader.fieldnames
-    ]
+    missing_cols = [src for src in column_mapping if src not in reader.fieldnames]
     if missing_cols:
         raise ValueError(
             f"CSV is missing mapped column(s): {', '.join(missing_cols)}"
@@ -271,19 +248,22 @@ def import_expenses_from_csv(user_id, project_id, file_stream, column_mapping):
             row_errors.append("department is required")
 
         amount = None
-        raw_amount = mapped.get("amount", "")
-        raw_amount = raw_amount.replace(",", "").replace("$", "").strip()
         try:
-            amount = float(raw_amount)
+            amount = parse_amount(mapped.get("amount", ""))
             if amount <= 0:
                 row_errors.append("amount must be positive")
         except (ValueError, TypeError):
             row_errors.append(f"invalid amount: '{mapped.get('amount', '')}'")
 
-        expense_date = _parse_date(mapped.get("expenseDate", ""))
+        expense_date = parse_date(mapped.get("expenseDate", ""))
         if not expense_date:
             row_errors.append(
                 f"invalid or missing date: '{mapped.get('expenseDate', '')}'"
+            )
+        elif not date_in_range(expense_date, project_start, project_end):
+            row_errors.append(
+                f"date {expense_date} is outside project range "
+                f"({(project_start or '?')[:10]} to {(project_end or '?')[:10]})"
             )
 
         if row_errors:
@@ -296,7 +276,6 @@ def import_expenses_from_csv(user_id, project_id, file_stream, column_mapping):
             "name": mapped["name"],
             "amount": amount,
             "department": mapped["department"],
-            "category": mapped.get("category") or None,
             "description": mapped.get("description") or None,
             "expense_date": expense_date,
             "vendor": mapped.get("vendor") or None,
@@ -320,7 +299,7 @@ def import_expenses_from_csv(user_id, project_id, file_stream, column_mapping):
 # ---------------------------------------------------------------------------
 
 _EXPORT_HEADERS = [
-    "Name", "Amount", "Department", "Category",
+    "Name", "Amount", "Department",
     "Date", "Vendor", "Description", "Project", "Currency",
 ]
 
@@ -352,7 +331,6 @@ def export_expenses_csv(user_id, project_id=None):
             r.get("name", ""),
             r.get("amount", ""),
             r.get("department", ""),
-            r.get("category", ""),
             r.get("expenseDate", ""),
             r.get("vendor", ""),
             r.get("description", ""),
