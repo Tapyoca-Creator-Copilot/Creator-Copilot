@@ -1,0 +1,30 @@
+tags:
+  - Earnings
+summary: Get a single earning
+description: >
+  Returns a single earning by ID. Must belong to the authenticated user.
+security:
+  - BearerAuth: []
+parameters:
+  - name: project_id
+    in: path
+    type: string
+    required: true
+    description: UUID of the project
+  - name: earning_id
+    in: path
+    type: string
+    required: true
+    description: UUID of the earning
+responses:
+  200:
+    description: Earning details
+    schema:
+      type: object
+      properties:
+        data:
+          $ref: "#/definitions/Earning"
+  404:
+    description: Earning not found
+  401:
+    description: Missing or invalid token

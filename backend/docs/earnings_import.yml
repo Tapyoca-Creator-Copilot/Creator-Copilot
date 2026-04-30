@@ -1,8 +1,8 @@
 tags:
-  - Expenses
-summary: Import expenses from CSV
+  - Earnings
+summary: Import earnings from CSV
 description: |
-  Upload a CSV file along with a JSON column mapping to bulk-import expenses
+  Upload a CSV file along with a JSON column mapping to bulk-import earnings
   into a project. Each row's date must fall within the project's start_date
   and end_date or it will be skipped. Per-row validation errors are returned
   in the response without aborting the whole import. Maximum 500 rows per request.
@@ -24,10 +24,9 @@ parameters:
     type: string
     required: true
     description: |
-      JSON object mapping CSV column headers to expense fields.
-      Valid targets: name, amount, department, expenseDate,
-      description, vendor, receiptUrl.
-      Example: {"Date": "expenseDate", "Description": "name", "Amount": "amount", "Department": "department"}
+      JSON object mapping CSV column headers to earning fields.
+      Valid targets: name, amount, sourceType, earningDate, description, contractUrl.
+      Example: {"Date": "earningDate", "Source": "name", "Amount": "amount", "Type": "sourceType"}
 security:
   - BearerAuth: []
 responses:
@@ -41,10 +40,8 @@ responses:
           properties:
             imported:
               type: integer
-              description: Number of rows successfully imported
             skipped:
               type: integer
-              description: Number of rows skipped due to errors
             errors:
               type: array
               items:

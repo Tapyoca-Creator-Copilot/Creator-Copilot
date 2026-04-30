@@ -12,11 +12,11 @@ def _load_prompt(filename):
 
 def get_chat_context(user_id):
     """
-    Pull all financial data for a user and return a structured context object
-    that can be injected into an AI system prompt.
+    Pull all financial data for a user (projects, expenses, earnings) and
+    return a structured context object that can be injected into an AI
+    system prompt.
     """
 
-    # 1. Get all projects
     projects_resp = (
         supabase.table("projects")
         .select("id, name, description, budget_ceiling, currency, project_type, start_date, end_date")
@@ -26,12 +26,11 @@ def get_chat_context(user_id):
     )
     projects = projects_resp.data or []
 
-    # 2. For each project, get expenses and compute budget summary
     project_summaries = []
     for project in projects:
         expenses_resp = (
             supabase.table("expenses")
-            .select("name, amount, department, category, expense_date, vendor")
+            .select("name, amount, department, expense_date, vendor")
             .eq("user_id", user_id)
             .eq("project_id", project["id"])
             .order("expense_date", desc=True)
@@ -39,15 +38,32 @@ def get_chat_context(user_id):
         )
         expenses = expenses_resp.data or []
 
+        earnings_resp = (
+            supabase.table("earnings")
+            .select("name, amount, source_type, earning_date, description")
+            .eq("user_id", user_id)
+            .eq("project_id", project["id"])
+            .order("earning_date", desc=True)
+            .execute()
+        )
+        earnings = earnings_resp.data or []
+
         budget_ceiling = float(project.get("budget_ceiling", 0))
         total_spent = sum(float(e["amount"]) for e in expenses)
         remaining = budget_ceiling - total_spent
 
-        # Spending breakdown by department
+        total_earned = sum(float(e["amount"]) for e in earnings)
+        profit = total_earned - total_spent
+
         dept_totals = {}
         for e in expenses:
             dept = e.get("department", "Other")
             dept_totals[dept] = round(dept_totals.get(dept, 0) + float(e["amount"]), 2)
+
+        source_totals = {}
+        for e in earnings:
+            src = e.get("source_type", "Other")
+            source_totals[src] = round(source_totals.get(src, 0) + float(e["amount"]), 2)
 
         project_summaries.append({
             "projectId": project["id"],
@@ -63,19 +79,35 @@ def get_chat_context(user_id):
                 "remaining": round(remaining, 2),
                 "overBudget": remaining < 0,
             },
+            "earnings": {
+                "totalEarned": round(total_earned, 2),
+                "profit": round(profit, 2),
+                "isProfitable": profit >= 0,
+            },
             "departmentBreakdown": dept_totals,
+            "sourceTypeBreakdown": source_totals,
             "recentExpenses": [
                 {
                     "name": e["name"],
                     "amount": float(e["amount"]),
                     "department": e.get("department"),
-                    "category": e.get("category"),
                     "date": e.get("expense_date"),
                     "vendor": e.get("vendor"),
                 }
                 for e in expenses[:20]
             ],
+            "recentEarnings": [
+                {
+                    "name": e["name"],
+                    "amount": float(e["amount"]),
+                    "sourceType": e.get("source_type"),
+                    "date": e.get("earning_date"),
+                    "description": e.get("description"),
+                }
+                for e in earnings[:20]
+            ],
             "totalExpenseCount": len(expenses),
+            "totalEarningCount": len(earnings),
         })
 
     return {
@@ -105,17 +137,26 @@ def build_system_prompt(context):
 
         for p in projects:
             budget = p["budget"]
+            earn = p.get("earnings", {})
             currency = p.get("currency", "USD")
 
             lines.append(f"--- Project: {p['name']} ({p.get('projectType', 'N/A')}) ---")
             if p.get("description"):
                 lines.append(f"  Description: {p['description']}")
             lines.append(f"  Period: {p.get('startDate', '?')} to {p.get('endDate', '?')}")
+
             lines.append(f"  Budget Ceiling: {currency} {budget['ceiling']:,.2f}")
             lines.append(f"  Total Spent: {currency} {budget['totalSpent']:,.2f}")
             lines.append(f"  Remaining: {currency} {budget['remaining']:,.2f}")
             if budget["overBudget"]:
-                lines.append(f"  ⚠ OVER BUDGET by {currency} {abs(budget['remaining']):,.2f}")
+                lines.append(f"  OVER BUDGET by {currency} {abs(budget['remaining']):,.2f}")
+
+            total_earned = earn.get("totalEarned", 0)
+            profit = earn.get("profit", 0)
+            lines.append(f"  Total Earned: {currency} {total_earned:,.2f}")
+            lines.append(f"  Profit (earned - spent): {currency} {profit:,.2f}")
+            if not earn.get("isProfitable", True):
+                lines.append(f"  Currently at a LOSS of {currency} {abs(profit):,.2f}")
 
             dept = p.get("departmentBreakdown", {})
             if dept:
@@ -123,12 +164,24 @@ def build_system_prompt(context):
                 for dept_name, dept_total in sorted(dept.items(), key=lambda x: -x[1]):
                     lines.append(f"    - {dept_name}: {currency} {dept_total:,.2f}")
 
-            recent = p.get("recentExpenses", [])
-            if recent:
-                lines.append(f"  Recent expenses ({min(len(recent), 10)} of {p.get('totalExpenseCount', len(recent))}):")
-                for e in recent[:10]:
+            sources = p.get("sourceTypeBreakdown", {})
+            if sources:
+                lines.append(f"  Earnings by source:")
+                for src_name, src_total in sorted(sources.items(), key=lambda x: -x[1]):
+                    lines.append(f"    - {src_name}: {currency} {src_total:,.2f}")
+
+            recent_e = p.get("recentExpenses", [])
+            if recent_e:
+                lines.append(f"  Recent expenses ({min(len(recent_e), 10)} of {p.get('totalExpenseCount', len(recent_e))}):")
+                for e in recent_e[:10]:
                     vendor_str = f" ({e['vendor']})" if e.get("vendor") else ""
                     lines.append(f"    - {e['date']}: {e['name']} — {currency} {e['amount']:,.2f} [{e.get('department', '?')}]{vendor_str}")
+
+            recent_earn = p.get("recentEarnings", [])
+            if recent_earn:
+                lines.append(f"  Recent earnings ({min(len(recent_earn), 10)} of {p.get('totalEarningCount', len(recent_earn))}):")
+                for e in recent_earn[:10]:
+                    lines.append(f"    - {e['date']}: {e['name']} — {currency} {e['amount']:,.2f} [{e.get('sourceType', '?')}]")
 
             lines.append("")
 
