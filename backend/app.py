@@ -4,6 +4,7 @@ from flask_cors import CORS
 from docs.swagger import init_swagger
 from routes.health import health_bp
 from routes.expenses import expenses_bp
+from routes.earnings import earnings_bp
 from routes.projects import projects_bp
 from routes.chat import chat_bp
 
@@ -35,6 +36,7 @@ def create_app():
     # --- Register route blueprints ---
     app.register_blueprint(health_bp)
     app.register_blueprint(expenses_bp)
+    app.register_blueprint(earnings_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(chat_bp)
 

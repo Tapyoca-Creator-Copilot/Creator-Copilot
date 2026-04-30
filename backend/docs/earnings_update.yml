@@ -1,8 +1,8 @@
 tags:
-  - Expenses
-summary: Update an expense
+  - Earnings
+summary: Update an earning
 description: >
-  Update one or more fields of an existing expense.
+  Update one or more fields of an existing earning.
   Only the fields provided in the request body will be updated.
 security:
   - BearerAuth: []
@@ -12,11 +12,11 @@ parameters:
     type: string
     required: true
     description: UUID of the project
-  - name: expense_id
+  - name: earning_id
     in: path
     type: string
     required: true
-    description: UUID of the expense
+    description: UUID of the earning
   - name: body
     in: body
     required: true
@@ -27,28 +27,26 @@ parameters:
           type: string
         amount:
           type: number
-        department:
+        sourceType:
           type: string
         description:
           type: string
-        expenseDate:
+        earningDate:
           type: string
           format: date
-        vendor:
-          type: string
-        receiptUrl:
+        contractUrl:
           type: string
 responses:
   200:
-    description: Expense updated successfully
+    description: Earning updated successfully
     schema:
       type: object
       properties:
         data:
-          $ref: "#/definitions/Expense"
+          $ref: "#/definitions/Earning"
   400:
     description: Validation error
   404:
-    description: Expense not found
+    description: Earning not found
   401:
     description: Missing or invalid token
