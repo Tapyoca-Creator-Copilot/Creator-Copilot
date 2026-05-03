@@ -7,26 +7,43 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAuth } from "@/features/auth/context/AuthContext";
-import { importEarningsCsv } from "@/features/earnings/services/earnings";
+import { importEarningsFromCsv } from "@/features/earnings/services/earnings";
 import { importExpensesCsv } from "@/features/expenses/services/expenses";
 import ImportSection from "@/features/import-data/components/ImportSection";
 import { EARNING_FIELD_CONFIG } from "@/features/import-data/constants/earningFieldConfig";
 import { EXPENSE_FIELD_CONFIG } from "@/features/import-data/constants/expenseFieldConfig";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
+import { useState } from "react";
 
 const ImportDataPage = () => {
   const { session } = UserAuth();
   const { activeProject: selectedProject, isLoadingProjects } = useActiveProject();
+  const [activeTab, setActiveTab] = useState("earnings");
+
+  const activeCopy = activeTab === "earnings"
+    ? {
+        title: "Importing Earnings",
+        description: "Upload a CSV file to bulk-import earnings records into your selected project.",
+      }
+    : {
+        title: "Importing Expenses",
+        description: "Upload a CSV file to bulk-import expense records into your selected project.",
+      };
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title="Import Data" />
-        <div className="p-6 md:p-8">
-          <div className="mx-auto grid w-full max-w-full gap-6 lg:items-start">
+        <div className="p-6 md:p-8 space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">{activeCopy.title}</h2>
+            <p className="mt-1 text-muted-foreground">{activeCopy.description}</p>
+          </div>
 
-            <Tabs defaultValue="earnings">
+          <div className="mx-auto grid w-full max-w-full gap-6 lg:items-start">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+
               <Card className="border-black/5 dark:border-white/10">
                 <CardHeader className="flex flex-row items-start justify-between gap-4">
                   <div className="space-y-1">
@@ -71,7 +88,7 @@ const ImportDataPage = () => {
                   selectedProject={selectedProject}
                   session={session}
                   fieldConfig={EARNING_FIELD_CONFIG}
-                  importFn={importEarningsCsv}
+                  importFn={importEarningsFromCsv}
                   entityLabel="earning"
                 />
               </TabsContent>
@@ -86,7 +103,6 @@ const ImportDataPage = () => {
                 />
               </TabsContent>
             </Tabs>
-
           </div>
         </div>
       </SidebarInset>

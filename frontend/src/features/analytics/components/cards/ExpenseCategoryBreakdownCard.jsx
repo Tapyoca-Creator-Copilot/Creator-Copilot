@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ExpenseChartTooltip from "@/features/analytics/components/chart-tooltip/ExpenseChartTooltip";
-import { buildCategoryData } from "@/features/analytics/utils/categoryBreakdown";
+import SingleValueChartTooltip from "@/features/analytics/components/shared/SingleValueChartTooltip";
+import { buildDepartmentData } from "@/features/analytics/utils/categoryBreakdown";
 import { currencyFormatter } from "@/features/analytics/utils/formatters";
 import { filterExpensesByTimeRange, getTimeRangeLabel } from "@/features/analytics/utils/graphTimeRange";
 import { cn } from "@/lib/utils";
@@ -9,27 +9,33 @@ import { List, ListItem } from "@tremor/react";
 import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
-const ExpenseCategoryDonutCard = ({
+const ExpenseCategoryBreakdownCard = ({
   projectId,
   expenses = [],
   isLoading = false,
   timeRange = "month",
+  currency: projectCurrency,
   projectStartDate,
   projectEndDate,
 }) => {
+  const currency = useMemo(
+    () => projectCurrency || expenses.find((expense) => expense?.project?.currency)?.project?.currency || "USD",
+    [expenses, projectCurrency]
+  );
+
   const filteredExpenses = useMemo(
     () => filterExpensesByTimeRange(expenses, timeRange, { projectStartDate, projectEndDate }),
     [expenses, projectEndDate, projectStartDate, timeRange]
   );
 
-  const donutData = useMemo(() => buildCategoryData(filteredExpenses), [filteredExpenses]);
+  const donutData = useMemo(() => buildDepartmentData(filteredExpenses), [filteredExpenses]);
   const timeRangeLabel = getTimeRangeLabel(timeRange).toLowerCase();
 
   if (!projectId) {
     return (
       <Card className="border-black/5 dark:border-white/10 bg-card">
         <CardContent className="pt-6 text-sm text-muted-foreground">
-          Select a project to view {timeRangeLabel} expense categories.
+          Select a project to view {timeRangeLabel} expense departments.
         </CardContent>
       </Card>
     );
@@ -39,7 +45,7 @@ const ExpenseCategoryDonutCard = ({
     return (
       <Card className="border-black/5 dark:border-white/10 bg-card">
         <CardContent className="pt-6 text-sm text-muted-foreground">
-          Loading category breakdown...
+          Loading department breakdown...
         </CardContent>
       </Card>
     );
@@ -49,7 +55,7 @@ const ExpenseCategoryDonutCard = ({
     return (
       <Card className="border-black/5 dark:border-white/10 bg-card">
         <CardContent className="pt-6 text-sm text-muted-foreground">
-          No expense categories found for this {timeRangeLabel} view yet.
+          No expense departments found for this {timeRangeLabel} view yet.
         </CardContent>
       </Card>
     );
@@ -58,9 +64,9 @@ const ExpenseCategoryDonutCard = ({
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle>Total expenses by category</CardTitle>
+        <CardTitle>Total expenses by department</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {currencyFormatter(donutData.totalAmount)} across {donutData.rows.length} categories
+          {currencyFormatter(donutData.totalAmount, currency)} across {donutData.rows.length} departments
         </p>
       </CardHeader>
 
@@ -75,7 +81,7 @@ const ExpenseCategoryDonutCard = ({
                 dominantBaseline="middle"
                 className="fill-foreground text-2xl font-semibold"
               >
-                {currencyFormatter(donutData.totalAmount)}
+                {currencyFormatter(donutData.totalAmount, currency)}
               </text>
               <Pie
                 data={donutData.rows}
@@ -111,9 +117,9 @@ const ExpenseCategoryDonutCard = ({
                   const color = point?.payload?.colorHex || "var(--primary)";
 
                   return (
-                    <ExpenseChartTooltip
+                    <SingleValueChartTooltip
                       title={name}
-                      value={currencyFormatter(amount)}
+                      value={currencyFormatter(amount, currency)}
                       markerColor={color}
                       markerLabel="expenses"
                     />
@@ -125,7 +131,7 @@ const ExpenseCategoryDonutCard = ({
         </div>
 
         <p className="mt-8 flex items-center justify-between text-sm text-muted-foreground">
-          <span>Category</span>
+          <span>Department</span>
           <span>Amount / Share</span>
         </p>
 
@@ -143,7 +149,7 @@ const ExpenseCategoryDonutCard = ({
 
               <div className="flex items-center space-x-2">
                 <span className="font-medium tabular-nums text-foreground">
-                  {currencyFormatter(item.amount)}
+                  {currencyFormatter(item.amount, currency)}
                 </span>
                 <Badge variant="secondary">
                   {item.share}
@@ -157,4 +163,4 @@ const ExpenseCategoryDonutCard = ({
   );
 };
 
-export default ExpenseCategoryDonutCard;
+export default ExpenseCategoryBreakdownCard;

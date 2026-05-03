@@ -9,27 +9,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 
+import { EarningsKpiSection } from "@/features/analytics/components/kpi/EarningsKpiSection";
 import AddEarningsDialog from "@/features/earnings/components/AddEarningsDialog";
 import DeleteEarningsDialog from "@/features/earnings/components/DeleteEarningsDialog";
-import EditEarningsDialog from "@/features/earnings/components/EditEarningsDialog";
 import EarningsFilters from "@/features/earnings/components/EarningsFilters";
 import EarningsTable from "@/features/earnings/components/EarningsTable";
+import EditEarningsDialog from "@/features/earnings/components/EditEarningsDialog";
 import {
-  createEarningInSupabase,
-  createEarningViaApi,
-  deleteEarningInSupabase,
-  deleteEarningViaApi,
-  getEarningsFromApi,
-  getEarningsFromSupabase,
-  updateEarningInSupabase,
-  updateEarningViaApi,
+    createEarning,
+    deleteEarning,
+    exportEarningsAsCsv,
+    getEarnings,
+    resolveEarningSourceFilterValue,
+    updateEarning,
 } from "@/features/earnings/services/earnings";
+import { getExpenses } from "@/features/expenses/services/expenses";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
-
-const DATA_SOURCES = [
-  { key: "supabase", label: "Supabase" },
-  { key: "api", label: "Backend API" },
-];
 
 const Earnings = () => {
   const { session } = UserAuth();
@@ -40,10 +35,13 @@ const Earnings = () => {
     isLoadingProjects,
   } = useActiveProject();
 
-  const [dataSource, setDataSource] = useState("supabase");
-
   const [earnings, setEarnings] = useState([]);
   const [isLoadingEarnings, setIsLoadingEarnings] = useState(false);
+
+  const [kpiEarnings, setKpiEarnings] = useState([]);
+  const [isLoadingKpiEarnings, setIsLoadingKpiEarnings] = useState(false);
+
+  const [kpiExpenses, setKpiExpenses] = useState([]);
 
   const [search, setSearch] = useState("");
   const [sourceType, setSourceType] = useState("all");
@@ -52,11 +50,30 @@ const Earnings = () => {
   const [earningToEdit, setEarningToEdit] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [earningToDelete, setEarningToDelete] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const userName =
     session?.user?.user_metadata?.full_name ||
     session?.user?.email?.split("@")[0] ||
     "User";
+
+  const loadKpiEarnings = useCallback(async () => {
+    if (!session?.user?.id || !selectedProjectId) {
+      setKpiEarnings([]);
+      setKpiExpenses([]);
+      setIsLoadingKpiEarnings(false);
+      return;
+    }
+
+    setIsLoadingKpiEarnings(true);
+    const [earningsResult, expensesResult] = await Promise.allSettled([
+      getEarnings({ userId: session.user.id, projectId: selectedProjectId }),
+      getExpenses({ userId: session.user.id, projectId: selectedProjectId }),
+    ]);
+    setKpiEarnings(earningsResult.status === "fulfilled" ? earningsResult.value?.data || [] : []);
+    setKpiExpenses(expensesResult.status === "fulfilled" ? expensesResult.value?.data || [] : []);
+    setIsLoadingKpiEarnings(false);
+  }, [selectedProjectId, session?.user?.id]);
 
   const loadEarnings = useCallback(async () => {
     if (!session?.user?.id || !selectedProjectId) {
@@ -67,11 +84,9 @@ const Earnings = () => {
 
     setIsLoadingEarnings(true);
     try {
-      const fetchFn = dataSource === "supabase" ? getEarningsFromSupabase : getEarningsFromApi;
-      const { data } = await fetchFn({
+      const { data } = await getEarnings({
         userId: session.user.id,
         projectId: selectedProjectId,
-        sourceType,
       });
       setEarnings(data || []);
     } catch {
@@ -79,28 +94,75 @@ const Earnings = () => {
       toast.error("Unable to load earnings. Please try again.");
     }
     setIsLoadingEarnings(false);
-  }, [dataSource, sourceType, selectedProjectId, session?.user?.id]);
+  }, [selectedProjectId, session?.user?.id]);
 
   useEffect(() => {
     loadEarnings();
   }, [loadEarnings]);
 
   useEffect(() => {
+    loadKpiEarnings();
+  }, [loadKpiEarnings]);
+
+  useEffect(() => {
     setSearch("");
   }, [selectedProjectId]);
 
-  const visibleEarnings = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return earnings;
+  const rangedKpiEarnings = useMemo(() => {
+    const start = selectedProject?.startDate?.slice(0, 10) ?? null;
+    const end = selectedProject?.endDate?.slice(0, 10) ?? null;
+    if (!start && !end) return kpiEarnings || [];
+    return (kpiEarnings || []).filter((e) => {
+      const d = e?.earningDate?.slice(0, 10);
+      if (!d) return true;
+      if (start && d < start) return false;
+      if (end && d > end) return false;
+      return true;
+    });
+  }, [kpiEarnings, selectedProject?.startDate, selectedProject?.endDate]);
 
-    return (earnings || []).filter((earning) => {
+  const rangedKpiExpenses = useMemo(() => {
+    const start = selectedProject?.startDate?.slice(0, 10) ?? null;
+    const end = selectedProject?.endDate?.slice(0, 10) ?? null;
+    if (!start && !end) return kpiExpenses || [];
+    return (kpiExpenses || []).filter((e) => {
+      const d = e?.expenseDate?.slice(0, 10);
+      if (!d) return true;
+      if (start && d < start) return false;
+      if (end && d > end) return false;
+      return true;
+    });
+  }, [kpiExpenses, selectedProject?.startDate, selectedProject?.endDate]);
+
+  const visibleEarnings = useMemo(() => {
+    const projectStart = selectedProject?.startDate?.slice(0, 10) ?? null;
+    const projectEnd = selectedProject?.endDate?.slice(0, 10) ?? null;
+
+    const inRange = (earnings || []).filter((earning) => {
+      if (!projectStart && !projectEnd) return true;
+      const d = earning?.earningDate?.slice(0, 10);
+      if (!d) return true;
+      if (projectStart && d < projectStart) return false;
+      if (projectEnd && d > projectEnd) return false;
+      return true;
+    });
+
+    const bySource =
+      sourceType === "all"
+        ? inRange
+        : inRange.filter((earning) => resolveEarningSourceFilterValue(earning?.sourceType) === sourceType);
+
+    const query = search.trim().toLowerCase();
+    if (!query) return bySource;
+
+    return bySource.filter((earning) => {
       const haystack = [earning?.name, earning?.sourceType, earning?.description]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [earnings, search]);
+  }, [earnings, search, selectedProject?.startDate, selectedProject?.endDate, sourceType]);
 
   const isProjectGateActive = !selectedProjectId;
 
@@ -115,35 +177,63 @@ const Earnings = () => {
   };
 
   const handleEarningCreated = (created) => {
-    if (!created) { loadEarnings(); return; }
+    if (!created) { loadEarnings(); loadKpiEarnings(); return; }
 
     const matchesProject = created.projectId === selectedProjectId;
-    const matchesSource = sourceType === "all" || created.sourceType === sourceType;
+    const matchesSource = sourceType === "all" || resolveEarningSourceFilterValue(created.sourceType) === sourceType;
 
     if (matchesProject && matchesSource) {
       setEarnings((prev) => [{ ...created, project: created.project || selectedProject }, ...(prev || [])]);
-      return;
+    } else {
+      loadEarnings();
     }
-    loadEarnings();
+    loadKpiEarnings();
   };
 
   const handleEarningUpdated = (updated) => {
-    if (!updated) { loadEarnings(); return; }
+    if (!updated) { loadEarnings(); loadKpiEarnings(); return; }
     setEarnings((prev) =>
       (prev || []).map((e) =>
         e.id === updated.id ? { ...updated, project: updated.project || e.project } : e
       )
     );
+    loadKpiEarnings();
   };
 
   const handleEarningDeleted = (deletedId) => {
-    if (!deletedId) { loadEarnings(); return; }
+    if (!deletedId) { loadEarnings(); loadKpiEarnings(); return; }
     setEarnings((prev) => (prev || []).filter((e) => e.id !== deletedId));
+    loadKpiEarnings();
   };
 
-  const getCreateFn = () => dataSource === "supabase" ? createEarningInSupabase : createEarningViaApi;
-  const getUpdateFn = () => dataSource === "supabase" ? updateEarningInSupabase : updateEarningViaApi;
-  const getDeleteFn = () => dataSource === "supabase" ? deleteEarningInSupabase : deleteEarningViaApi;
+  const handleExportEarnings = async () => {
+    if (!selectedProjectId) {
+      toast.error("Select a project to export.");
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      const { blob, filename } = await exportEarningsAsCsv(selectedProjectId, {
+        userId: session.user.id,
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename || "earnings.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success("Earnings exported successfully");
+    } catch (error) {
+      toast.error(error?.message || "Unable to export CSV. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>
@@ -153,7 +243,7 @@ const Earnings = () => {
 
         <div className="p-6 md:p-8 space-y-6">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Track your project revenue</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Track your project earnings</h2>
             <p className="mt-1 text-muted-foreground">
               {userName}, choose a project, log earnings, and filter by source type.
             </p>
@@ -193,9 +283,10 @@ const Earnings = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={isLoadingProjects || projects.length === 0 || !selectedProjectId}
+                  onClick={handleExportEarnings}
+                  disabled={isExporting || isLoadingProjects || projects.length === 0 || !selectedProjectId}
                 >
-                  Export CSV
+                  {isExporting ? "Exporting..." : "Export CSV"}
                 </Button>
                 {!isLoadingProjects && projects.length === 0 ? (
                   <Button type="button" asChild>
@@ -220,7 +311,7 @@ const Earnings = () => {
             projects={projects}
             selectedProjectId={selectedProjectId}
             onCreated={handleEarningCreated}
-            createFn={getCreateFn()}
+            createFn={createEarning}
           />
 
           <EditEarningsDialog
@@ -234,7 +325,7 @@ const Earnings = () => {
             selectedProjectId={selectedProjectId}
             earning={earningToEdit}
             onUpdated={handleEarningUpdated}
-            updateFn={getUpdateFn()}
+            updateFn={updateEarning}
           />
 
           <DeleteEarningsDialog
@@ -246,40 +337,25 @@ const Earnings = () => {
             session={session}
             earning={earningToDelete}
             onDeleted={handleEarningDeleted}
-            deleteFn={getDeleteFn()}
+            deleteFn={deleteEarning}
+          />
+
+          <EarningsKpiSection
+            projectId={selectedProjectId}
+            project={selectedProject}
+            earnings={rangedKpiEarnings}
+            expenses={rangedKpiExpenses}
+            isLoading={isLoadingKpiEarnings}
           />
 
           <Card>
             <CardHeader className="space-y-1">
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <CardTitle>Revenue Records</CardTitle>
-                  <CardDescription>
-                    {isProjectGateActive
-                      ? "Select a project to view earnings."
-                      : `Viewing earnings for ${selectedProject?.name || "your selected project"}.`}
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-muted-foreground">Source:</span>
-                  <div className="flex rounded-md border border-input overflow-hidden text-xs">
-                    {DATA_SOURCES.map(({ key, label }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setDataSource(key)}
-                        className={`px-3 py-1.5 font-medium transition-colors ${
-                          dataSource === key
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background text-muted-foreground hover:bg-accent hover:text-foreground"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <CardTitle>Earnings Records</CardTitle>
+              <CardDescription>
+                {isProjectGateActive
+                  ? "Select a project to view earnings."
+                  : `Viewing earnings for ${selectedProject?.name || "your selected project"}.`}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <EarningsFilters
@@ -301,11 +377,12 @@ const Earnings = () => {
                 <EarningsTable
                   earnings={visibleEarnings}
                   isLoading={isLoadingEarnings}
+                  currency={selectedProject?.currency}
                   emptyTitle={sourceType === "all" ? "No earnings yet" : `No ${sourceType} earnings yet`}
                   emptyDescription={
                     search
                       ? "Try a different search term or clear filters."
-                      : "Add your first earning to start tracking revenue."
+                      : "Add your first earning to start tracking earnings."
                   }
                   onEditEarning={handleEditEarning}
                   onDeleteEarning={handleDeleteEarning}

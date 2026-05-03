@@ -9,13 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 
-import { KPICardsSection } from "@/features/analytics/components/kpi-cards";
+import { ExpenseKpiSection } from "@/features/analytics/components/kpi";
 import AddExpenseDialog from "@/features/expenses/components/AddExpenseDialog";
 import DeleteExpenseDialog from "@/features/expenses/components/DeleteExpenseDialog";
 import EditExpenseDialog from "@/features/expenses/components/EditExpenseDialog";
 import ExpenseFilters from "@/features/expenses/components/ExpenseFilters";
 import ExpensesTable from "@/features/expenses/components/ExpensesTable";
-import { exportProjectExpensesCsv, getExpenses } from "@/features/expenses/services/expenses";
+import {
+  exportProjectExpensesCsv,
+  getExpenses,
+  resolveExpenseDepartmentFilterValue,
+} from "@/features/expenses/services/expenses";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const Expenses = () => {
@@ -46,6 +50,19 @@ const Expenses = () => {
     session?.user?.user_metadata?.full_name ||
     session?.user?.email?.split("@")[0] ||
     "User";
+
+  const rangedKpiExpenses = useMemo(() => {
+    const start = selectedProject?.startDate?.slice(0, 10) ?? null;
+    const end = selectedProject?.endDate?.slice(0, 10) ?? null;
+    if (!start && !end) return kpiExpenses || [];
+    return (kpiExpenses || []).filter((e) => {
+      const d = e?.expenseDate?.slice(0, 10);
+      if (!d) return true;
+      if (start && d < start) return false;
+      if (end && d > end) return false;
+      return true;
+    });
+  }, [kpiExpenses, selectedProject?.startDate, selectedProject?.endDate]);
 
   const loadKpiExpenses = useCallback(async () => {
     if (!session?.user?.id || !selectedProjectId) {
@@ -80,7 +97,6 @@ const Expenses = () => {
       const { data } = await getExpenses({
         userId: session.user.id,
         projectId: selectedProjectId,
-        department,
       });
       setExpenses(data || []);
     } catch {
@@ -88,7 +104,7 @@ const Expenses = () => {
       toast.error("Unable to load expenses. Please try again.");
     }
     setIsLoadingExpenses(false);
-  }, [department, selectedProjectId, session?.user?.id]);
+  }, [selectedProjectId, session?.user?.id]);
 
   useEffect(() => {
     loadExpenses();
@@ -103,12 +119,27 @@ const Expenses = () => {
   }, [selectedProjectId]);
 
   const visibleExpenses = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) {
-      return expenses;
-    }
+    const projectStart = selectedProject?.startDate?.slice(0, 10) ?? null;
+    const projectEnd = selectedProject?.endDate?.slice(0, 10) ?? null;
 
-    return (expenses || []).filter((expense) => {
+    const inRange = (expenses || []).filter((expense) => {
+      if (!projectStart && !projectEnd) return true;
+      const d = expense?.expenseDate?.slice(0, 10);
+      if (!d) return true;
+      if (projectStart && d < projectStart) return false;
+      if (projectEnd && d > projectEnd) return false;
+      return true;
+    });
+
+    const byDepartment =
+      department === "all"
+        ? inRange
+        : inRange.filter((expense) => resolveExpenseDepartmentFilterValue(expense?.department) === department);
+
+    const query = search.trim().toLowerCase();
+    if (!query) return byDepartment;
+
+    return byDepartment.filter((expense) => {
       const haystack = [
         expense?.name,
         expense?.vendor,
@@ -122,7 +153,7 @@ const Expenses = () => {
 
       return haystack.includes(query);
     });
-  }, [expenses, search]);
+  }, [department, expenses, search, selectedProject?.startDate, selectedProject?.endDate]);
 
   const isProjectGateActive = !selectedProjectId;
 
@@ -143,7 +174,8 @@ const Expenses = () => {
     }
 
     const matchesProject = created.projectId === selectedProjectId;
-    const matchesDepartment = department === "all" || created.department === department;
+    const matchesDepartment =
+      department === "all" || resolveExpenseDepartmentFilterValue(created.department) === department;
 
     if (matchesProject && matchesDepartment) {
       setExpenses((previous) => [
@@ -231,7 +263,7 @@ const Expenses = () => {
 
         <div className="p-6 md:p-8 space-y-6">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Track your project spending</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Track your project expenses</h2>
             <p className="mt-1 text-muted-foreground">
               {userName}, choose a project, log expenses, and filter transactions by department.
             </p>
@@ -329,10 +361,10 @@ const Expenses = () => {
             onDeleted={handleExpenseDeleted}
           />
 
-          <KPICardsSection
+          <ExpenseKpiSection
             projectId={selectedProjectId}
             project={selectedProject}
-            expenses={kpiExpenses}
+            expenses={rangedKpiExpenses}
             isLoading={isLoadingKpiExpenses}
             error={null}
             timeRange="month"
@@ -369,6 +401,7 @@ const Expenses = () => {
                 <ExpensesTable
                   expenses={visibleExpenses}
                   isLoading={isLoadingExpenses}
+                  currency={selectedProject?.currency}
                   emptyTitle={department === "all" ? "No expenses yet" : `No ${department} expenses yet`}
                   emptyDescription={
                     search

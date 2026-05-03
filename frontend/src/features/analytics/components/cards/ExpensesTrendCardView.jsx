@@ -1,11 +1,26 @@
 import { Card, CardContent } from "@/components/ui/card";
-import ChartStateMessage from "@/features/analytics/components/chart-state/ChartStateMessage";
+import {
+  EXPENSE_COLOR,
+  EXPENSE_FILL,
+  getSingleBarChartSizing,
+} from "@/features/analytics/components/config/chartConfig";
+import ChartState from "@/features/analytics/components/shared/ChartState";
+import InsightTitle from "@/features/analytics/components/shared/InsightTitle";
+import {
+  SingleSeriesTrendAreaChart,
+  SingleSeriesTrendBarChart,
+} from "@/features/analytics/components/charts/BarTrendCharts";
 import { GRAPH_TIME_RANGE_OPTIONS } from "@/features/analytics/utils/graphTimeRange";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight } from "lucide-react";
-import { Area, AreaChart as RechartsAreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
-const ExpenseAreaChartCardView = ({
+const AREA_CHART_VARIANTS = {
+  expense: {
+    stroke: EXPENSE_COLOR,
+    fill: EXPENSE_FILL,
+  },
+};
+
+const ExpensesTrendCardView = ({
   isLoading = false,
   projectId,
   currentDate,
@@ -22,12 +37,18 @@ const ExpenseAreaChartCardView = ({
   timeRange,
   timeRangeLabel,
   xAxisTicks,
+  chartVariant = "expense",
 }) => {
+  const chartColors = AREA_CHART_VARIANTS[chartVariant] || AREA_CHART_VARIANTS.expense;
+  const useAreaChart = timeRange === "day";
+  const barChartSizing = getSingleBarChartSizing(timeRange);
   const header = (
     <div className="mb-2 flex items-start justify-between gap-4">
       <div className="min-w-0 flex-1">
         <p className="text-lg font-semibold tracking-tight text-foreground">Expenses by {timeRangeLabel}</p>
-        <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formattedValue}</p>
+        <p className="mt-2 text-2xl font-semibold tracking-tight" style={{ color: chartColors.stroke }}>
+          {formattedValue}
+        </p>
         <p className="mt-1 text-sm text-muted-foreground">On {currentDate}</p>
       </div>
 
@@ -58,7 +79,7 @@ const ExpenseAreaChartCardView = ({
       <Card className="h-full border-black/5 dark:border-white/10 bg-card">
         <CardContent className="h-full flex flex-col">
           {header}
-          <ChartStateMessage
+          <ChartState
             className="mt-6"
             title={`Select a project to view ${timeRangeLabel} expense trend.`}
             description="Choose a project from the header selector to load the trend chart."
@@ -73,7 +94,7 @@ const ExpenseAreaChartCardView = ({
       <Card className="h-full border-black/5 dark:border-white/10 bg-card">
         <CardContent className="h-full flex flex-col">
           {header}
-          <ChartStateMessage className="mt-6" title="Loading expense chart..." description="" />
+          <ChartState className="mt-6" title="Loading expense chart..." description="" />
         </CardContent>
       </Card>
     );
@@ -84,7 +105,7 @@ const ExpenseAreaChartCardView = ({
       <Card className="h-full border-black/5 dark:border-white/10 bg-card">
         <CardContent className="h-full flex flex-col">
           {header}
-          <ChartStateMessage
+          <ChartState
             className="mt-6"
             title={chartState.emptyState?.title}
             description={chartState.emptyState?.description}
@@ -97,61 +118,41 @@ const ExpenseAreaChartCardView = ({
   return (
     <Card className="h-full border-black/5 dark:border-white/10 bg-card">
       <CardContent className="h-full flex flex-col">
-        <div>
+        <div className="flex min-h-0 flex-1 flex-col">
           {header}
           <div className="mt-2 flex justify-end">
             <span className={changeChipClassName}>{changeChipLabel}</span>
           </div>
 
-          <div className="-mb-2 mt-6 h-60 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsAreaChart data={chartData} margin={{ top: 6, right: 0, bottom: 0, left: 0 }}>
-                <defs>
-                  <linearGradient id="expenseTrendFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-
-                <XAxis
-                  dataKey="date"
-                  ticks={xAxisTicks}
-                  interval={0}
-                  allowDuplicatedCategory={false}
-                  padding={{ left: 0, right: 0 }}
-                  tickLine={false}
-                  axisLine={false}
-                  minTickGap={0}
-                  tick={renderXAxisTick}
-                />
-
-                <Tooltip
-                  wrapperStyle={{ outline: "none" }}
-                  isAnimationActive={false}
-                  cursor={{ stroke: "#d1d5db", strokeWidth: 1 }}
-                  content={renderTooltipContent}
-                />
-
-                <Area
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="var(--primary)"
-                  strokeWidth={2}
-                  fill="url(#expenseTrendFill)"
-                  isAnimationActive={true}
-                  animationDuration={700}
-                  activeDot={{ r: 5, fill: "var(--primary)", stroke: "var(--primary)" }}
-                />
-              </RechartsAreaChart>
-            </ResponsiveContainer>
+          <div className="-mb-2 mt-6 min-h-60 flex-1 w-full">
+            {useAreaChart ? (
+              <SingleSeriesTrendAreaChart
+                data={chartData}
+                fill={chartColors.fill}
+                stroke={chartColors.stroke}
+                renderTooltipContent={renderTooltipContent}
+                renderXAxisTick={renderXAxisTick}
+                xAxisTicks={xAxisTicks}
+              />
+            ) : (
+              <SingleSeriesTrendBarChart
+                data={chartData}
+                fill={chartColors.stroke}
+                barCategoryGap={barChartSizing.barCategoryGap}
+                maxBarSize={barChartSizing.maxBarSize}
+                cursorOpacity={barChartSizing.cursorOpacity}
+                renderTooltipContent={renderTooltipContent}
+                renderXAxisTick={renderXAxisTick}
+                xAxisTicks={xAxisTicks}
+              />
+            )}
           </div>
         </div>
 
-        <div className="mt-auto pt-6">
+        <div className="pt-6">
           <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-            <p className="flex items-center gap-2 text-sm font-medium text-primary dark:text-primary">
-              <ArrowUpRight className="h-4 w-4" />
-              {insightCopy.title}
+            <p className="flex items-center gap-2 text-sm font-medium" style={{ color: chartColors.stroke }}>
+              <InsightTitle direction={insightCopy.direction}>{insightCopy.title}</InsightTitle>
             </p>
             <p className="mt-2 text-sm leading-6 text-foreground/90">{insightCopy.body}</p>
             {insightCopy.action ? (
@@ -164,4 +165,4 @@ const ExpenseAreaChartCardView = ({
   );
 };
 
-export default ExpenseAreaChartCardView;
+export default ExpensesTrendCardView;

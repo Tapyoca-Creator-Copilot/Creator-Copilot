@@ -15,6 +15,15 @@ export const EXPENSE_DEPARTMENTS = [
   "Other",
 ];
 
+export const resolveExpenseDepartmentFilterValue = (department) => {
+  const value = typeof department === "string" ? department.trim() : "";
+  if (!value) {
+    return "Other";
+  }
+
+  return EXPENSE_DEPARTMENTS.includes(value) ? value : "Other";
+};
+
 export const normalizeExpense = (expense) => {
   if (!expense) {
     return null;
@@ -26,7 +35,7 @@ export const normalizeExpense = (expense) => {
     projectId: expense.projectId,
     name: expense.name,
     amount: Number(expense.amount ?? 0),
-    department: expense.department,
+    department: resolveExpenseDepartmentFilterValue(expense.department),
     category: expense.category ?? null,
     description: expense.description ?? null,
     expenseDate: expense.expenseDate,

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-const ExpenseChartTooltip = ({
+const SingleValueChartTooltip = ({
   title,
   value,
   markerColor = "var(--primary)",
@@ -21,4 +21,4 @@ const ExpenseChartTooltip = ({
   );
 };
 
-export default ExpenseChartTooltip;
+export default SingleValueChartTooltip;

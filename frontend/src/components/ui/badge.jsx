@@ -10,6 +10,9 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
         secondary: "bg-muted text-foreground",
+        positive: "rounded-md bg-badge-positive text-badge-positive-foreground",
+        negative: "rounded-md bg-badge-negative text-badge-negative-foreground",
+        neutral: "rounded-md bg-badge-neutral text-badge-neutral-foreground",
         destructive:
           "bg-destructive text-destructive-foreground [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
@@ -41,5 +44,4 @@ function Badge({
   );
 }
 
-export { Badge, badgeVariants };
-
+export { Badge };

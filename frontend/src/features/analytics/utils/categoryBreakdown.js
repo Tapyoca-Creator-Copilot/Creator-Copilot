@@ -1,3 +1,5 @@
+import { EXPENSE_DEPARTMENTS } from "@/features/expenses/services/expenses";
+import { EARNING_SOURCE_TYPES } from "@/features/earnings/services/earnings";
 import {
   AvailableChartColors,
   constructCategoryColors,
@@ -24,16 +26,26 @@ const DONUT_COLOR_ORDER = [
 const resolveCategoryLabel = (expense) =>
   expense?.category?.trim() || expense?.department?.trim() || "Uncategorized";
 
-export const buildCategoryData = (expenses) => {
-  const totalsByCategory = new Map();
+const resolveDepartmentLabel = (expense) => {
+  const department = expense?.department?.trim();
+  if (!department) {
+    return "Other";
+  }
 
-  (expenses || []).forEach((expense) => {
-    const label = resolveCategoryLabel(expense);
-    const currentTotal = totalsByCategory.get(label) || 0;
-    totalsByCategory.set(label, currentTotal + Number(expense?.amount || 0));
-  });
+  return EXPENSE_DEPARTMENTS.includes(department) ? department : "Other";
+};
 
-  const sorted = Array.from(totalsByCategory.entries())
+const resolveEarningSourceLabel = (earning) => {
+  const sourceType = earning?.sourceType?.trim();
+  if (!sourceType) {
+    return "Other";
+  }
+
+  return EARNING_SOURCE_TYPES.includes(sourceType) ? sourceType : "Other";
+};
+
+const buildDonutRows = (totalsMap) => {
+  const sorted = Array.from(totalsMap.entries())
     .map(([name, amount]) => ({ name, amount }))
     .sort((a, b) => b.amount - a.amount);
 
@@ -56,4 +68,40 @@ export const buildCategoryData = (expenses) => {
       };
     }),
   };
+};
+
+export const buildCategoryData = (expenses) => {
+  const totalsByCategory = new Map();
+
+  (expenses || []).forEach((expense) => {
+    const label = resolveCategoryLabel(expense);
+    const currentTotal = totalsByCategory.get(label) || 0;
+    totalsByCategory.set(label, currentTotal + Number(expense?.amount || 0));
+  });
+
+  return buildDonutRows(totalsByCategory);
+};
+
+export const buildDepartmentData = (expenses) => {
+  const totalsByDepartment = new Map();
+
+  (expenses || []).forEach((expense) => {
+    const label = resolveDepartmentLabel(expense);
+    const currentTotal = totalsByDepartment.get(label) || 0;
+    totalsByDepartment.set(label, currentTotal + Number(expense?.amount || 0));
+  });
+
+  return buildDonutRows(totalsByDepartment);
+};
+
+export const buildEarningSourceData = (earnings) => {
+  const totalsBySource = new Map();
+
+  (earnings || []).forEach((earning) => {
+    const label = resolveEarningSourceLabel(earning);
+    const currentTotal = totalsBySource.get(label) || 0;
+    totalsBySource.set(label, currentTotal + Number(earning?.amount || 0));
+  });
+
+  return buildDonutRows(totalsBySource);
 };
