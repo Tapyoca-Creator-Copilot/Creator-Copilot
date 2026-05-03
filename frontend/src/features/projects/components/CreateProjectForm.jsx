@@ -28,6 +28,9 @@ export const CreateProjectForm = ({
   isSubmitting,
   minCalendarYear,
   maxCalendarYear,
+  submitLabel = "Create Project",
+  submittingLabel = "Creating...",
+  canEditCurrency = true,
 }) => {
   const descriptionValue = form.watch("description") || "";
   const startDateValue = form.watch("startDate");
@@ -126,7 +129,11 @@ export const CreateProjectForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Currency</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={!canEditCurrency}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select currency" />
@@ -260,7 +267,7 @@ export const CreateProjectForm = ({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Project"}
+              {isSubmitting ? submittingLabel : submitLabel}
             </Button>
           </div>
         </CardFooter>

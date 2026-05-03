@@ -2,6 +2,7 @@ import { Upload, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     FileUpload,
     FileUploadDropzone,
@@ -26,16 +27,22 @@ const FileUploadCard = ({
   return (
     <Card
       className={`border-black/5 dark:border-white/10 transition-opacity ${
-        !selectedProject ? "pointer-events-none opacity-50" : ""
+        !selectedProject ? "opacity-75" : ""
       }`}
     >
-      <CardHeader>
-        <CardTitle>Upload Data Files</CardTitle>
-        <CardDescription>
-          {selectedProject
-            ? `Import data to "${selectedProject.name}"`
-            : "Select a project in the header to enable file upload"}
-        </CardDescription>
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <CardTitle>Upload Data Files</CardTitle>
+          <CardDescription>
+            {selectedProject
+              ? `Import data to "${selectedProject.name}"`
+              : "Select a project in the header to enable file upload"}
+          </CardDescription>
+        </div>
+        <TabsList className="shrink-0">
+          <TabsTrigger value="earnings">Earnings</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+        </TabsList>
       </CardHeader>
       <CardContent className="space-y-6">
         <FileUpload

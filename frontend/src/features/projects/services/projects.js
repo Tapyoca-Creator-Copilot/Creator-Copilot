@@ -68,6 +68,33 @@ export const getProjectById = async (projectId, options = {}) => {
   };
 };
 
+export const updateProject = async (projectId, payload, options = {}) => {
+  if (!projectId) {
+    throw new Error("Project ID is required to update a project.");
+  }
+
+  if (!options.userId) {
+    throw new Error("You must be signed in to update a project.");
+  }
+
+  const body = await apiFetch(`/api/projects/${projectId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      name: payload.name,
+      description: payload.description,
+      budgetCeiling: payload.budgetCeiling,
+      projectType: payload.projectType,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
+    }),
+  });
+
+  return {
+    data: normalizeProject(body.data),
+    source: "api",
+  };
+};
+
 export const archiveProject = async (projectId, options = {}) => {
   if (!projectId) {
     throw new Error("Project ID is required to archive a project.");

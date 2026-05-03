@@ -61,6 +61,30 @@ export const AuthContextProvider = ({ children }) => {
         return { success: true, data };
     };
 
+    const sendPasswordResetEmail = async (email) => {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
+        });
+
+        if (error) {
+            console.error("Error sending password reset email:", error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    };
+
+    const updateUserPassword = async (password) => {
+        const { data, error } = await supabase.auth.updateUser({ password });
+
+        if (error) {
+            console.error("Error updating password:", error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    };
+
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
@@ -86,7 +110,7 @@ export const AuthContextProvider = ({ children }) => {
     };
  
     return (
-        <AuthContext.Provider value={{session, isAuthLoading, signUpNewUser, signInUser, signInWithGoogle, signOutUser}}>
+        <AuthContext.Provider value={{session, isAuthLoading, signUpNewUser, signInUser, signInWithGoogle, sendPasswordResetEmail, updateUserPassword, signOutUser}}>
             {children}
         </AuthContext.Provider>
     )

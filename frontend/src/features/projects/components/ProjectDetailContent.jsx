@@ -1,8 +1,16 @@
+import { Pencil } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatBudget, formatDate } from "@/features/projects/utils/formatters";
 
-export const ProjectDetailContent = ({ project, onBack, onArchive, isArchiving = false }) => {
+export const ProjectDetailContent = ({
+  project,
+  onBack,
+  onArchive,
+  onEdit,
+  isArchiving = false,
+}) => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-start justify-between gap-4">
@@ -15,7 +23,7 @@ export const ProjectDetailContent = ({ project, onBack, onArchive, isArchiving =
           </p>
         </div>
         {project.projectType && (
-          <div className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground whitespace-nowrap">
+          <div className="rounded-full bg-background px-4 py-2 text-sm font-medium text-accent-foreground whitespace-nowrap border border-black/5 dark:border-white/10">
             {project.projectType}
           </div>
         )}
@@ -76,13 +84,19 @@ export const ProjectDetailContent = ({ project, onBack, onArchive, isArchiving =
         </CardContent>
       </Card>
 
-      <div className="flex gap-3">
-        <Button variant="default" onClick={onBack}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Button variant="default" onClick={onBack} className="w-full sm:w-auto">
           Back to Projects
         </Button>
-        <Button variant="destructive" onClick={onArchive} disabled={isArchiving}>
-          {isArchiving ? "Archiving..." : "Archive Project"}
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={onEdit} className="hover:bg-[#EDE5DE] dark:hover:bg-[var(--button-outline-hover)]">
+            <Pencil className="size-4" />
+            Edit Project
+          </Button>
+          <Button variant="destructive" onClick={onArchive} disabled={isArchiving}>
+            {isArchiving ? "Archiving..." : "Archive Project"}
+          </Button>
+        </div>
       </div>
     </div>
   );

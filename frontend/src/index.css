@@ -79,6 +79,7 @@ body {
 :root {
     --radius: 0.625rem;
     --background: #FBF3EB;
+    --background-foreground: #FBF3EB;
     --foreground: #272727ff;
     --card: #FBF3EB;
     --card-foreground: #272727ff;
@@ -88,6 +89,12 @@ body {
     --primary-foreground: #FBF3EB;
     --secondary:#272727ff;
     --secondary-foreground: #FBF3EB;
+    --button-primary-hover: #B7653A;
+    --button-secondary-hover: #151515;
+    --button-destructive-hover: #963D3D;
+    --button-outline-hover: rgb(0 0 0 / 0.055);
+    --button-outline-hover-border: rgb(0 0 0 / 0.16);
+    --button-ghost-hover: rgb(0 0 0 / 0.055);
     --muted: rgba(0, 0, 0, 0.03);
     --muted-foreground: oklch(0.556 0 0);
     --accent: rgba(0, 0, 0, 0.030);
@@ -135,6 +142,12 @@ body {
     --primary-foreground: oklch(0.205 0 0);
     --secondary: #f4eadb;
     --secondary-foreground: oklch(0.205 0 0);
+    --button-primary-hover: #D88656;
+    --button-secondary-hover: #fff7ec;
+    --button-destructive-hover: #EA9088;
+    --button-outline-hover: rgb(255 255 255 / 0.10);
+    --button-outline-hover-border: rgb(255 255 255 / 0.22);
+    --button-ghost-hover: rgb(255 255 255 / 0.10);
     --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(0.708 0 0);
     --accent: oklch(0.269 0 0);

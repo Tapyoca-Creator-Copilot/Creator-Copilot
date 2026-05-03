@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 import ArchiveProjectDialog from "@/features/projects/components/ArchiveProjectDialog";
+import EditProjectDialog from "@/features/projects/components/EditProjectDialog";
 import { ProjectDetailContent } from "@/features/projects/components/ProjectDetailContent";
 import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 import { archiveProject, getProjectById } from "@/features/projects/services/projects";
@@ -24,6 +25,7 @@ const ProjectDetailPage = () => {
   const [loadError, setLoadError] = useState("");
   const [isArchiving, setIsArchiving] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const loadProject = useCallback(async () => {
     if (!projectId || !session?.user?.id) {
@@ -65,6 +67,14 @@ const ProjectDetailPage = () => {
     }
     setIsArchiving(false);
   }, [navigate, project?.id, refreshProjects, session?.user?.id]);
+
+  const handleProjectUpdated = useCallback(
+    async (updatedProject) => {
+      setProject(updatedProject || null);
+      await refreshProjects();
+    },
+    [refreshProjects]
+  );
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>
@@ -113,10 +123,19 @@ const ProjectDetailPage = () => {
             <ProjectDetailContent
               project={project}
               onBack={() => navigate("/projects")}
+              onEdit={() => setIsEditDialogOpen(true)}
               onArchive={() => setIsArchiveDialogOpen(true)}
               isArchiving={isArchiving}
             />
           )}
+
+          <EditProjectDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            project={project}
+            userId={session?.user?.id}
+            onUpdated={handleProjectUpdated}
+          />
 
           <ArchiveProjectDialog
               open={isArchiveDialogOpen}

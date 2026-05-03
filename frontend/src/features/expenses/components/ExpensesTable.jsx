@@ -158,7 +158,7 @@ const ExpensesTable = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-muted-foreground">
           Showing{" "}
           <span className="font-semibold text-foreground">
@@ -171,12 +171,73 @@ const ExpensesTable = ({
         </p>
       </div>
 
-      <div className="rounded-lg border border-black/5 dark:border-white/10 overflow-hidden">
+      <div className="space-y-3 md:hidden">
+        {visibleExpenses.map((expense) => (
+          <div
+            key={expense.id}
+            className="rounded-lg border border-black/5 bg-card p-4 dark:border-white/10"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-medium text-foreground">{expense.name}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {formatDate(expense.expenseDate)}
+                  {expense.vendor ? ` · ${expense.vendor}` : ""}
+                </p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" aria-label="Expense actions">
+                    <IconDotsVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      onEditExpense?.(expense);
+                    }}
+                  >
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      onDeleteExpense?.(expense);
+                    }}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <Badge variant="secondary" className="max-w-full font-medium">
+                {expense.department}
+              </Badge>
+              <p className="font-semibold text-foreground">
+                {formatCurrency(Number(expense.amount), currency)}
+              </p>
+            </div>
+
+            {expense.description ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                {buildNotesPreview(expense.description, 90)}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden rounded-lg border border-black/5 dark:border-white/10 overflow-hidden md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-accent border-black/5 dark:border-white/10">
               <TableHead
-                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                className="px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
                 onClick={() => handleSort("date")}
               >
                 <span className="inline-flex items-center">
@@ -184,7 +245,7 @@ const ExpensesTable = ({
                 </span>
               </TableHead>
               <TableHead
-                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                className="px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
                 onClick={() => handleSort("expense")}
               >
                 <span className="inline-flex items-center">
@@ -192,7 +253,7 @@ const ExpensesTable = ({
                 </span>
               </TableHead>
               <TableHead
-                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                className="px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
                 onClick={() => handleSort("department")}
               >
                 <span className="inline-flex items-center">
@@ -200,7 +261,7 @@ const ExpensesTable = ({
                 </span>
               </TableHead>
               <TableHead
-                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                className="px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
                 onClick={() => handleSort("amount")}
               >
                 <span className="inline-flex items-center">
@@ -208,7 +269,7 @@ const ExpensesTable = ({
                 </span>
               </TableHead>
               <TableHead
-                className="hidden md:table-cell px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                className="hidden lg:table-cell px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
                 onClick={() => handleSort("vendor")}
               >
                 <span className="inline-flex items-center">
@@ -216,36 +277,36 @@ const ExpensesTable = ({
                 </span>
               </TableHead>
               <TableHead
-                className="hidden xl:table-cell px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                className="hidden xl:table-cell px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
                 onClick={() => handleSort("notes")}
               >
                 <span className="inline-flex items-center">
                   Notes{sortIndicator("notes")}
                 </span>
               </TableHead>
-              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-right flex-1">Actions</TableHead>
+              <TableHead className="px-4 py-4 lg:px-6 font-semibold text-foreground text-xs uppercase tracking-wider text-right flex-1">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {visibleExpenses.map((expense) => (
               <TableRow key={expense.id} className="border-black/5 dark:border-white/10 hover:bg-accent/50 transition-colors">
-                <TableCell className="px-6 py-4 text-sm text-foreground flex-1">{formatDate(expense.expenseDate)}</TableCell>
-                <TableCell className="px-6 py-4 flex-1">
+                <TableCell className="px-4 py-4 lg:px-6 text-sm text-foreground flex-1">{formatDate(expense.expenseDate)}</TableCell>
+                <TableCell className="px-4 py-4 lg:px-6 flex-1">
                   <div className="font-medium text-foreground">{expense.name}</div>
                 </TableCell>
-                <TableCell className="px-6 py-4 flex-1">
+                <TableCell className="px-4 py-4 lg:px-6 flex-1">
                   <Badge variant="secondary" className="font-medium">
                     {expense.department}
                   </Badge>
                 </TableCell>
-                <TableCell className="px-6 py-4 text-sm font-semibold text-foreground flex-1">
+                <TableCell className="px-4 py-4 lg:px-6 text-sm font-semibold text-foreground flex-1">
                   {formatCurrency(Number(expense.amount), currency)}
                 </TableCell>
-                <TableCell className="hidden md:table-cell px-6 py-4 text-sm text-foreground flex-1">{expense.vendor || "—"}</TableCell>
-                <TableCell className="hidden xl:table-cell px-6 py-4 text-sm text-muted-foreground flex-1">
+                <TableCell className="hidden lg:table-cell px-4 py-4 lg:px-6 text-sm text-foreground flex-1">{expense.vendor || "—"}</TableCell>
+                <TableCell className="hidden xl:table-cell px-4 py-4 lg:px-6 text-sm text-muted-foreground flex-1">
                   {buildNotesPreview(expense.description)}
                 </TableCell>
-                <TableCell className="px-6 py-4 text-right flex-1">
+                <TableCell className="px-4 py-4 lg:px-6 text-right flex-1">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon-sm" aria-label="Expense actions" className="hover:bg-foreground/10">

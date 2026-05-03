@@ -2,6 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 
 import AccountPage from "@/features/account/pages/AccountPage";
 import PrivateRoute from "@/features/auth/components/PrivateRoute";
+import ForgotPassword from "@/features/auth/pages/ForgotPassword";
+import ResetPassword from "@/features/auth/pages/ResetPassword";
 import Signin from "@/features/auth/pages/Signin";
 import Signup from "@/features/auth/pages/Signup";
 import Dashboard from "@/features/dashboard/pages/Dashboard";
@@ -18,6 +20,8 @@ export const appRouter = createBrowserRouter([
   { path: "/", element: <Signup /> },
   { path: "/signup", element: <Signup /> },
   { path: "/signin", element: <Signin /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/reset-password", element: <ResetPassword /> },
   {
     path: "/dashboard",
     element: (

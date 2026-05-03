@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 import { importEarningsFromCsv } from "@/features/earnings/services/earnings";
 import { importExpensesCsv } from "@/features/expenses/services/expenses";
@@ -45,7 +45,7 @@ const ImportDataPage = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
 
               <Card className="border-black/5 dark:border-white/10">
-                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <CardHeader>
                   <div className="space-y-1">
                     <CardTitle>Active Project</CardTitle>
                     <CardDescription>
@@ -56,10 +56,6 @@ const ImportDataPage = () => {
                           : "Create a project to start importing data."}
                     </CardDescription>
                   </div>
-                  <TabsList className="shrink-0">
-                    <TabsTrigger value="earnings">Earnings</TabsTrigger>
-                    <TabsTrigger value="expenses">Expenses</TabsTrigger>
-                  </TabsList>
                 </CardHeader>
                 <CardContent>
                   {isLoadingProjects ? (

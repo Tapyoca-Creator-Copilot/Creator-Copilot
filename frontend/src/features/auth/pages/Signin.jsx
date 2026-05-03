@@ -76,6 +76,11 @@ const Signin = () => {
                   {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                 </Button>
               </div>
+              <div className="flex justify-end">
+                <Link to="/forgot-password" className="text-sm font-semibold text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
               {error && (
                 <p className="text-sm text-destructive">{error}</p>
               )}

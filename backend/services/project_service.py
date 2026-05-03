@@ -70,3 +70,41 @@ def get_project_by_id(user_id, project_id):
         .execute()
     )
     return _normalize_project(resp.data)
+
+
+def update_project(user_id, project_id, payload):
+    field_map = {
+        "name": "name",
+        "description": "description",
+        "budgetCeiling": "budget_ceiling",
+        "currency": "currency",
+        "projectType": "project_type",
+        "startDate": "start_date",
+        "endDate": "end_date",
+    }
+
+    patch = {}
+    for api_field, db_field in field_map.items():
+        if api_field not in payload:
+            continue
+
+        value = payload[api_field]
+        if isinstance(value, str):
+            value = value.strip()
+        patch[db_field] = value
+
+    if not patch:
+        raise Exception("No project fields provided")
+
+    resp = (
+        supabase.table("projects")
+        .update(patch)
+        .eq("id", project_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    if not resp.data:
+        raise Exception("Project not found")
+
+    return _normalize_project(resp.data[0])

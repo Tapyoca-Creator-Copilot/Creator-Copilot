@@ -56,7 +56,7 @@ export function KpiCard({
 
   if (isLoading) {
     return (
-      <Card variant="kpi" className="py-5 px-4">
+      <Card variant="kpi" className="min-w-0 py-5 px-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />
@@ -79,25 +79,25 @@ export function KpiCard({
   };
 
   return (
-    <Card variant="kpi" className="py-5 px-4">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
+    <Card variant="kpi" className="min-w-0 py-5 px-4">
+      <div className="min-w-0 space-y-2">
+        <div className="flex min-w-0 items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {Icon && <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
             <dt className="text-sm font-medium text-muted-foreground truncate">{name}</dt>
           </div>
 
           {badge && (
-            <Badge variant={badgeType} className="flex-shrink-0">
+            <Badge variant={badgeType} className="min-w-0 max-w-[55%] flex-shrink justify-start truncate">
               {getBadgeIcon()}
-              {displayBadge}
+              <span className="truncate">{displayBadge}</span>
             </Badge>
           )}
         </div>
 
-        <dd className="text-2xl font-semibold tracking-tight text-foreground">{displayStat}</dd>
+        <dd className="min-w-0 break-words text-2xl font-semibold tracking-tight text-foreground">{displayStat}</dd>
 
-        {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
+        {helper && <p className="min-w-0 break-words text-xs text-muted-foreground">{helper}</p>}
       </div>
     </Card>
   );

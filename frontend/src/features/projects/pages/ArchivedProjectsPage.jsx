@@ -5,11 +5,14 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 import ArchivedProjectCard from "@/features/projects/components/ArchivedProjectCard";
 import { useArchivedProjects } from "@/features/projects/hooks/useArchivedProjects";
+import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 
 const ArchivedProjectsPage = () => {
   const { session } = UserAuth();
+  const { refreshProjects } = useActiveProject();
   const { projects, isLoading, recoveringProjectId, recoverProject } = useArchivedProjects(
-    session?.user?.id
+    session?.user?.id,
+    { onRecovered: refreshProjects }
   );
 
   return (

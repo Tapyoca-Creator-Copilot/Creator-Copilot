@@ -21,38 +21,36 @@ const ExpenseFilters = ({
         />
       </div>
 
-      <div className="w-full overflow-x-auto">
-        <div className="flex w-max items-center gap-2 py-1">
+      <div className="flex flex-wrap items-center gap-2 py-1">
+        <Badge
+          asChild
+          variant={department === "all" ? "default" : "secondary"}
+          className="rounded-full px-4 py-1 text-sm">
+          <button
+            type="button"
+            aria-label="All departments"
+            aria-pressed={department === "all"}
+            disabled={disabled}
+            onClick={() => onDepartmentChange?.("all")}>
+            All
+          </button>
+        </Badge>
+        {EXPENSE_DEPARTMENTS.map((item) => (
           <Badge
+            key={item}
             asChild
-            variant={department === "all" ? "default" : "secondary"}
+            variant={department === item ? "default" : "secondary"}
             className="rounded-full px-4 py-1 text-sm">
             <button
               type="button"
-              aria-label="All departments"
-              aria-pressed={department === "all"}
+              aria-label={`${item} department`}
+              aria-pressed={department === item}
               disabled={disabled}
-              onClick={() => onDepartmentChange?.("all")}>
-              All
+              onClick={() => onDepartmentChange?.(item)}>
+              {item}
             </button>
           </Badge>
-          {EXPENSE_DEPARTMENTS.map((item) => (
-            <Badge
-              key={item}
-              asChild
-              variant={department === item ? "default" : "secondary"}
-              className="rounded-full px-4 py-1 text-sm">
-              <button
-                type="button"
-                aria-label={`${item} department`}
-                aria-pressed={department === item}
-                disabled={disabled}
-                onClick={() => onDepartmentChange?.(item)}>
-                {item}
-              </button>
-            </Badge>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );

@@ -3,7 +3,8 @@ import { toast } from "sonner";
 
 import { getArchivedProjects, unarchiveProject } from "@/features/projects/services/projects";
 
-export const useArchivedProjects = (userId) => {
+export const useArchivedProjects = (userId, options = {}) => {
+  const { onRecovered } = options;
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [recoveringProjectId, setRecoveringProjectId] = useState("");
@@ -40,13 +41,14 @@ export const useArchivedProjects = (userId) => {
       try {
         await unarchiveProject(project.id, { userId });
         setProjects((previous) => (previous || []).filter((item) => item.id !== project.id));
-        toast.success(`Recovered \"${project.name}\"`);
+        await onRecovered?.(project);
+        toast.success(`Recovered "${project.name}"`);
       } catch (error) {
         toast.error(error?.message || "Unable to recover this project.");
       }
       setRecoveringProjectId("");
     },
-    [userId]
+    [onRecovered, userId]
   );
 
   return {

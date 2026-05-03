@@ -15,7 +15,7 @@ export function EarningsKpiSection({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[repeat(2,minmax(0,1fr))] lg:grid-cols-[repeat(3,minmax(0,1fr))]">
         {[0, 1, 2].map((i) => (
           <KpiCard key={i} badgeType="loading" />
         ))}
@@ -32,7 +32,7 @@ export function EarningsKpiSection({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-[repeat(2,minmax(0,1fr))] lg:grid-cols-[repeat(3,minmax(0,1fr))]">
       {earningKpiCards.map((card) => (
         <KpiCard key={card.name} {...card} />
       ))}

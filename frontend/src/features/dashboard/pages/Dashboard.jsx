@@ -480,6 +480,13 @@ const Dashboard = () => {
                 ))}
               </section>
 
+              <section className="grid grid-cols-1 gap-6">
+                <ActivityList
+                  items={recentActivity}
+                  emptyMessage="Recent activity will appear after expenses or earnings are added."
+                />
+              </section>
+
               <ProfitTrendCard
                 projectId={activeProjectId}
                 earnings={filteredEarnings}
@@ -490,13 +497,6 @@ const Dashboard = () => {
                 projectStartDate={activeProject?.startDate}
                 projectEndDate={activeProject?.endDate}
               />
-
-              <section className="grid grid-cols-1 gap-6">
-                <ActivityList
-                  items={recentActivity}
-                  emptyMessage="Recent activity will appear after expenses or earnings are added."
-                />
-              </section>
             </TabsContent>
 
             <TabsContent value="expenses" className="space-y-6">
@@ -504,29 +504,6 @@ const Dashboard = () => {
                 {expenseKpiCards.map((card) => (
                   <KpiCard key={card.name} {...card} />
                 ))}
-              </section>
-
-              <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <ExpensesTrendCard
-                  projectId={activeProjectId}
-                  expenses={filteredExpenses}
-                  isLoading={isLoading}
-                  timeRange={timeRange}
-                  onTimeRangeChange={setTimeRange}
-                  currency={projectCurrency}
-                  projectStartDate={activeProject?.startDate}
-                  projectEndDate={activeProject?.endDate}
-                  showTimeRangeFilter={false}
-                />
-                <ExpenseCategoryBreakdownCard
-                  projectId={activeProjectId}
-                  expenses={filteredExpenses}
-                  isLoading={isLoading}
-                  timeRange={timeRange}
-                  currency={projectCurrency}
-                  projectStartDate={activeProject?.startDate}
-                  projectEndDate={activeProject?.endDate}
-                />
               </section>
 
               <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -593,6 +570,29 @@ const Dashboard = () => {
                   emptyMessage="Recent expense activity will appear after expenses are added."
                 />
               </section>
+
+              <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <ExpensesTrendCard
+                  projectId={activeProjectId}
+                  expenses={filteredExpenses}
+                  isLoading={isLoading}
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  currency={projectCurrency}
+                  projectStartDate={activeProject?.startDate}
+                  projectEndDate={activeProject?.endDate}
+                  showTimeRangeFilter={false}
+                />
+                <ExpenseCategoryBreakdownCard
+                  projectId={activeProjectId}
+                  expenses={filteredExpenses}
+                  isLoading={isLoading}
+                  timeRange={timeRange}
+                  currency={projectCurrency}
+                  projectStartDate={activeProject?.startDate}
+                  projectEndDate={activeProject?.endDate}
+                />
+              </section>
             </TabsContent>
 
             <TabsContent value="earnings" className="space-y-6">
@@ -600,26 +600,6 @@ const Dashboard = () => {
                 {earningsKpiCards.map((card) => (
                   <KpiCard key={card.name} {...card} />
                 ))}
-              </section>
-
-              <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-                <EarningsTrendCard
-                  projectId={activeProjectId}
-                  earnings={filteredEarnings}
-                  isLoading={isLoading}
-                  timeRange={timeRange}
-                  currency={projectCurrency}
-                  projectStartDate={activeProject?.startDate}
-                  projectEndDate={activeProject?.endDate}
-                />
-
-                <EarningsSourceBreakdownCard
-                  projectId={activeProjectId}
-                  earnings={filteredEarnings}
-                  isLoading={isLoading}
-                  timeRange={timeRange}
-                  currency={projectCurrency}
-                />
               </section>
 
               <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -686,6 +666,26 @@ const Dashboard = () => {
                   emptyMessage="Recent earning activity will appear after earnings are added."
                 />
               </section>
+
+              <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                <EarningsTrendCard
+                  projectId={activeProjectId}
+                  earnings={filteredEarnings}
+                  isLoading={isLoading}
+                  timeRange={timeRange}
+                  currency={projectCurrency}
+                  projectStartDate={activeProject?.startDate}
+                  projectEndDate={activeProject?.endDate}
+                />
+
+                <EarningsSourceBreakdownCard
+                  projectId={activeProjectId}
+                  earnings={filteredEarnings}
+                  isLoading={isLoading}
+                  timeRange={timeRange}
+                  currency={projectCurrency}
+                />
+              </section>
             </TabsContent>
 
             <TabsContent value="profit" className="space-y-6">
@@ -694,17 +694,6 @@ const Dashboard = () => {
                   <KpiCard key={card.name} {...card} />
                 ))}
               </section>
-
-              <ProfitTrendCard
-                projectId={activeProjectId}
-                earnings={filteredEarnings}
-                expenses={filteredExpenses}
-                isLoading={isLoading}
-                timeRange={timeRange}
-                currency={projectCurrency}
-                projectStartDate={activeProject?.startDate}
-                projectEndDate={activeProject?.endDate}
-              />
 
               <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <Card>
@@ -774,6 +763,17 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               </section>
+
+              <ProfitTrendCard
+                projectId={activeProjectId}
+                earnings={filteredEarnings}
+                expenses={filteredExpenses}
+                isLoading={isLoading}
+                timeRange={timeRange}
+                currency={projectCurrency}
+                projectStartDate={activeProject?.startDate}
+                projectEndDate={activeProject?.endDate}
+              />
             </TabsContent>
           </Tabs>
         </div>
