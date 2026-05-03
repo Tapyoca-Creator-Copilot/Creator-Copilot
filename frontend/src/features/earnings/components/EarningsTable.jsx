@@ -1,8 +1,22 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getPaginationItems } from "@/lib/pagination";
+import { getNextSortState, sortRows } from "@/lib/tableSort";
 import { IconDotsVertical } from "@tabler/icons-react";
+import { useMemo, useState } from "react";
+
+const ROWS_PER_PAGE = 20;
 
 const formatCurrency = (value, currency = "USD") => {
   if (typeof value !== "number" || Number.isNaN(value)) {
@@ -58,10 +72,68 @@ const EarningsTable = ({
   earnings,
   isLoading,
   emptyTitle = "No earnings yet",
-  emptyDescription = "Add your first earning to start tracking revenue.",
+  emptyDescription = "Add your first earning to start tracking earnings.",
   onEditEarning,
   onDeleteEarning,
+  currency: projectCurrency,
 }) => {
+  const DEFAULT_SORT_DIRECTIONS = useMemo(
+    () => ({
+      date: "desc",
+      earning: "asc",
+      source: "asc",
+      amount: "desc",
+      notes: "asc",
+    }),
+    []
+  );
+
+  const SORT_CONFIG = useMemo(
+    () => ({
+      date: { type: "date", getValue: (row) => row?.earningDate },
+      earning: { type: "text", getValue: (row) => row?.name },
+      source: { type: "text", getValue: (row) => row?.sourceType },
+      amount: { type: "number", getValue: (row) => row?.amount },
+      notes: { type: "text", getValue: (row) => row?.description },
+    }),
+    []
+  );
+
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDirection, setSortDirection] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const handleSort = (nextKey) => {
+    const next = getNextSortState(sortKey, sortDirection, nextKey, DEFAULT_SORT_DIRECTIONS);
+    setSortKey(next.sortKey);
+    setSortDirection(next.sortDirection);
+    setCurrentPage(1);
+  };
+
+  const sortIndicator = (key) => {
+    if (sortKey !== key) return null;
+    return (
+      <span className="ml-1 text-xs text-muted-foreground">
+        {sortDirection === "asc" ? "↑" : "↓"}
+      </span>
+    );
+  };
+
+  const sortedEarnings = useMemo(
+    () => sortRows(earnings || [], { sortKey, sortDirection, sortConfig: SORT_CONFIG }),
+    [earnings, sortDirection, sortKey, SORT_CONFIG]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(sortedEarnings.length / ROWS_PER_PAGE));
+  const boundedCurrentPage = Math.min(currentPage, totalPages);
+  const pageStart = (boundedCurrentPage - 1) * ROWS_PER_PAGE;
+  const pageEnd = pageStart + ROWS_PER_PAGE;
+  const visibleEarnings = sortedEarnings.slice(pageStart, pageEnd);
+  const paginationItems = useMemo(
+    () => getPaginationItems(boundedCurrentPage, totalPages),
+    [boundedCurrentPage, totalPages]
+  );
+
   if (isLoading) {
     return (
       <div className="rounded-lg border border-black/5 dark:border-white/10 bg-card p-6">
@@ -79,14 +151,18 @@ const EarningsTable = ({
     );
   }
 
-  const currency = earnings.find((e) => e?.project?.currency)?.project?.currency || "USD";
-  const total = earnings.reduce((sum, e) => sum + (Number(e?.amount) || 0), 0);
+  const currency = projectCurrency || (earnings || []).find((e) => e?.project?.currency)?.project?.currency || "USD";
+  const total = (earnings || []).reduce((sum, e) => sum + (Number(e?.amount) || 0), 0);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">
-          Showing <span className="font-semibold text-foreground">{earnings.length}</span> record{earnings.length !== 1 ? "s" : ""}
+          Showing{" "}
+          <span className="font-semibold text-foreground">
+            {pageStart + 1}-{Math.min(pageEnd, sortedEarnings.length)}
+          </span>{" "}
+          of <span className="font-semibold text-foreground">{earnings.length}</span> record{earnings.length !== 1 ? "s" : ""}
         </p>
         <p className="text-sm font-medium text-foreground">
           Total: <span className="font-semibold">{formatCurrency(total, currency)}</span>
@@ -97,16 +173,51 @@ const EarningsTable = ({
         <Table>
           <TableHeader>
             <TableRow className="bg-accent border-black/5 dark:border-white/10">
-              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Date</TableHead>
-              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Earning</TableHead>
-              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Source</TableHead>
-              <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Amount</TableHead>
-              <TableHead className="hidden xl:table-cell px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1">Notes</TableHead>
+              <TableHead
+                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                onClick={() => handleSort("date")}
+              >
+                <span className="inline-flex items-center">
+                  Date{sortIndicator("date")}
+                </span>
+              </TableHead>
+              <TableHead
+                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                onClick={() => handleSort("earning")}
+              >
+                <span className="inline-flex items-center">
+                  Earning{sortIndicator("earning")}
+                </span>
+              </TableHead>
+              <TableHead
+                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                onClick={() => handleSort("source")}
+              >
+                <span className="inline-flex items-center">
+                  Source{sortIndicator("source")}
+                </span>
+              </TableHead>
+              <TableHead
+                className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                onClick={() => handleSort("amount")}
+              >
+                <span className="inline-flex items-center">
+                  Amount{sortIndicator("amount")}
+                </span>
+              </TableHead>
+              <TableHead
+                className="hidden xl:table-cell px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-left flex-1 cursor-pointer select-none"
+                onClick={() => handleSort("notes")}
+              >
+                <span className="inline-flex items-center">
+                  Notes{sortIndicator("notes")}
+                </span>
+              </TableHead>
               <TableHead className="px-6 py-4 font-semibold text-foreground text-xs uppercase tracking-wider text-right flex-1">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {earnings.map((earning) => (
+            {visibleEarnings.map((earning) => (
               <TableRow key={earning.id} className="border-black/5 dark:border-white/10 hover:bg-accent/50 transition-colors">
                 <TableCell className="px-6 py-4 text-sm text-foreground flex-1">{formatDate(earning.earningDate)}</TableCell>
                 <TableCell className="px-6 py-4 flex-1">
@@ -118,7 +229,7 @@ const EarningsTable = ({
                   </Badge>
                 </TableCell>
                 <TableCell className="px-6 py-4 text-sm font-semibold text-foreground flex-1">
-                  {formatCurrency(Number(earning.amount), earning?.project?.currency || currency)}
+                  {formatCurrency(Number(earning.amount), currency)}
                 </TableCell>
                 <TableCell className="hidden xl:table-cell px-6 py-4 text-sm text-muted-foreground flex-1">
                   {buildNotesPreview(earning.description)}
@@ -157,6 +268,42 @@ const EarningsTable = ({
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 ? (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                type="button"
+                disabled={boundedCurrentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, boundedCurrentPage - 1))}
+              />
+            </PaginationItem>
+            {paginationItems.map((item) => (
+              <PaginationItem key={item}>
+                {typeof item === "number" ? (
+                  <PaginationLink
+                    type="button"
+                    isActive={item === boundedCurrentPage}
+                    onClick={() => setCurrentPage(item)}
+                  >
+                    {item}
+                  </PaginationLink>
+                ) : (
+                  <PaginationEllipsis />
+                )}
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                type="button"
+                disabled={boundedCurrentPage === totalPages}
+                onClick={() => setCurrentPage(Math.min(totalPages, boundedCurrentPage + 1))}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      ) : null}
     </div>
   );
 };

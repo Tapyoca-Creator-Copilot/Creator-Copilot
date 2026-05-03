@@ -1,8 +1,3 @@
-import {
-  ComposerAddAttachment,
-  ComposerAttachments,
-  UserMessageAttachments,
-} from "@/components/assistant-ui/attachment";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
@@ -18,6 +13,7 @@ import {
   MessagePrimitive,
   SuggestionPrimitive,
   ThreadPrimitive,
+  useAui,
   useAuiState,
 } from "@assistant-ui/react";
 import {
@@ -113,7 +109,62 @@ const ThreadWelcome = () => {
           </p>
         </div>
       </div>
+      <PresetQuestionPills />
       <ThreadSuggestions />
+    </div>
+  );
+};
+
+const SUGGESTED_QUESTIONS = [
+  {
+    label: "Estimate taxes",
+    prompt:
+      "Given my income so far this year, how much should I be saving for estimated taxes?",
+  },
+  {
+    label: "Find savings",
+    prompt:
+      "Looking at my expenses breakdown, what are my biggest inefficiencies or areas to save?",
+  },
+  {
+    label: "Budget runway",
+    prompt: "Based on my current expenses, how many months until I exhaust my budget?",
+  },
+  {
+    label: "Earnings forecast",
+    prompt:
+      "If my earnings grows at the current rate, what can I expect to earn next quarter?",
+  },
+];
+
+const PresetQuestionPills = () => {
+  const aui = useAui();
+  const isRunning = useAuiState((s) => s.thread.isRunning);
+
+  const sendPreset = (text) => {
+    if (isRunning) return;
+    const composer = aui.composer();
+    composer.setText(text);
+    composer.send();
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-(--thread-max-width) px-4 pb-3">
+      <div className="flex flex-wrap gap-2">
+        {SUGGESTED_QUESTIONS.map((item) => (
+          <Button
+            key={item.label}
+            type="button"
+            variant="secondary"
+            disabled={isRunning}
+            className="h-auto rounded-full px-3 py-1 text-xs"
+            aria-label={item.prompt}
+            onClick={() => sendPreset(item.prompt)}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -153,9 +204,7 @@ const ThreadSuggestionItem = () => {
 const Composer = () => {
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
-      <ComposerPrimitive.AttachmentDropzone
-        className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-border bg-popover px-1 pt-2 outline-none transition-colors has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
-        <ComposerAttachments />
+      <div className="flex w-full flex-col rounded-2xl border border-border bg-popover px-1 pt-2 outline-none transition-colors has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20">
         <ComposerPrimitive.Input
           placeholder="Send a message..."
           className="aui-composer-input mb-1 max-h-32 min-h-14 w-full resize-none bg-transparent px-4 pt-2 pb-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-0"
@@ -163,7 +212,7 @@ const Composer = () => {
           autoFocus
           aria-label="Message input" />
         <ComposerAction />
-      </ComposerPrimitive.AttachmentDropzone>
+      </div>
       <p className="mt-1 px-4 text-[11px] text-muted-foreground">Creator Copilot uses AI to provide insights and assistance. AI can make mistakes.</p>
     </ComposerPrimitive.Root>
   );
@@ -173,7 +222,7 @@ const ComposerAction = () => {
   return (
     <div
       className="aui-composer-action-wrapper relative mx-2 mb-2 flex items-center justify-between">
-      <ComposerAddAttachment />
+      <span className="w-8" aria-hidden="true" />
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
           <TooltipIconButton
@@ -305,7 +354,6 @@ const UserMessage = () => {
     <MessagePrimitive.Root
       className="aui-user-message-root fade-in slide-in-from-bottom-1 mx-auto grid w-full max-w-(--thread-max-width) animate-in auto-rows-auto grid-cols-[minmax(72px,1fr)_auto] content-start gap-y-2 px-2 py-3 duration-150 [&:where(>*)]:col-start-2"
       data-role="user">
-      <UserMessageAttachments />
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
         <div
           className="aui-user-message-content wrap-break-words rounded-2xl bg-primary px-4 py-2.5 text-primary-foreground hover:bg-primary/90">

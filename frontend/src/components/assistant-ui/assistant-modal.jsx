@@ -1,11 +1,10 @@
 "use client";
 import tapyIcon from "@/assets/tapy.png";
 import { Thread } from "@/components/assistant-ui/thread";
-import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
 import { AssistantModalPrimitive, ThreadListItemPrimitive, ThreadListPrimitive } from "@assistant-ui/react";
 import { Plus, Trash2 } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 
 const MODAL_SIZE_CLASSES = {
   small: "md:w-[min(80vw,44rem)] md:h-[min(66vh,34rem)]",
@@ -13,15 +12,32 @@ const MODAL_SIZE_CLASSES = {
   large: "md:w-[min(96vw,72rem)] md:h-[min(88vh,56rem)]",
 };
 
+const ASSISTANT_NUDGES = [
+  "Ask Tapy about this project",
+  "Need a quick budget read?",
+  "I can summarize expenses",
+  "Want help spotting profit signals?",
+];
+
 export const AssistantModal = () => {
   const [chatSize, setChatSize] = useState("default");
+  const [nudgeIndex, setNudgeIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNudgeIndex((index) => (index + 1) % ASSISTANT_NUDGES.length);
+    }, 6000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   return (
     <AssistantModalPrimitive.Root>
-      <AssistantModalPrimitive.Anchor className="aui-root aui-modal-anchor fixed right-4 bottom-4 z-50 h-20 w-20">
+      <AssistantModalPrimitive.Anchor className="aui-root aui-modal-anchor fixed right-4 bottom-4 z-50 h-20 w-20 sm:right-4 sm:bottom-4">
         <AssistantModalPrimitive.Trigger asChild>
-          <AssistantModalButton />
+          <AssistantModalButton className="peer" />
         </AssistantModalPrimitive.Trigger>
+        <AssistantNudge message={ASSISTANT_NUDGES[nudgeIndex]} />
       </AssistantModalPrimitive.Anchor>
       <AssistantModalPrimitive.Content
         sideOffset={16}
@@ -70,6 +86,15 @@ export const AssistantModal = () => {
   );
 };
 
+const AssistantNudge = ({ message }) => {
+  return (
+    <div className="pointer-events-none absolute bottom-3 right-[5.25rem] hidden w-max max-w-56 items-center rounded-full border border-border/80 bg-popover px-3 py-2 text-xs text-popover-foreground shadow-lg shadow-black/5 transition-opacity duration-200 peer-data-[state=open]:hidden sm:flex">
+      <span className="font-medium leading-none">{message}</span>
+      <span className="absolute -right-1.5 top-1/2 size-3 -translate-y-1/2 rotate-45 border-r border-t border-border/80 bg-popover" />
+    </div>
+  );
+};
+
 const ThreadHistorySidebar = () => {
   return (
     <div className="min-h-0 border-r border-border dark:border-border p-2">
@@ -107,12 +132,10 @@ const ThreadListItem = () => {
 };
 
 const AssistantModalButton = forwardRef(({ "data-state": state, ...rest }, ref) => {
-  const tooltip = state === "open" ? "Close Assistant" : "Open Tapy Assistant";
-
   return (
-    <TooltipIconButton
-      tooltip={tooltip}
-      side="left"
+    <button
+      type="button"
+      aria-label={state === "open" ? "Close assistant" : "Open assistant"}
       {...rest}
       className="aui-modal-button size-full rounded-none bg-transparent p-0 transition-transform hover:scale-110 hover:!bg-transparent dark:hover:!bg-transparent focus-visible:!ring-0 focus-visible:!border-transparent active:scale-90"
       ref={ref}>
@@ -122,7 +145,7 @@ const AssistantModalButton = forwardRef(({ "data-state": state, ...rest }, ref) 
         aria-hidden="true"
         draggable={false}
         className="aui-modal-button-icon size-full rounded-none object-cover" />
-    </TooltipIconButton>
+    </button>
   );
 });
 

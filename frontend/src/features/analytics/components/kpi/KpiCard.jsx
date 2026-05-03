@@ -1,15 +1,57 @@
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const cn = (...classes) => classes.filter(Boolean).join(" ");
-export function KPICard({
+function useCountUp(target, duration = 1000) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    let rafId;
+
+    if (target == null || target === 0) {
+      rafId = requestAnimationFrame(() => setValue(0));
+      return () => cancelAnimationFrame(rafId);
+    }
+
+    let startTime = null;
+
+    const step = (timestamp) => {
+      if (startTime === null) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(eased * target);
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
+      } else {
+        setValue(target);
+      }
+    };
+
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [target, duration]);
+
+  return value;
+}
+
+export function KpiCard({
   name,
   stat,
+  rawValue = null,
+  formatter = null,
   helper = null,
   icon: Icon = null,
   badge = null,
+  badgeRawValue = null,
+  badgeFormatter = null,
   badgeType = "neutral",
 }) {
+  const animated = useCountUp(rawValue ?? 0);
+  const animatedBadge = useCountUp(badgeRawValue ?? 0);
+  const displayStat = rawValue != null && formatter ? formatter(animated) : stat;
+  const displayBadge = badgeRawValue != null && badgeFormatter ? badgeFormatter(animatedBadge) : badge;
   const isLoading = badgeType === "loading";
 
   if (isLoading) {
@@ -27,26 +69,11 @@ export function KPICard({
     );
   }
 
-  const badgeColorClasses = {
-    positive: "bg-emerald-100 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-500",
-    negative: "bg-red-100 text-red-800 dark:bg-red-400/10 dark:text-red-500",
-    neutral: "bg-slate-100 text-slate-800 dark:bg-slate-400/10 dark:text-slate-500",
-  };
-
   const getBadgeIcon = () => {
     if (badgeType === "positive") {
       return <TrendingUp className="h-3 w-3" />;
     } else if (badgeType === "negative") {
       return <TrendingDown className="h-3 w-3" />;
-    }
-    return null;
-  };
-
-  const getChangeIcon = () => {
-    if (changeType === "positive") {
-      return <TrendingUp className="h-4 w-4" />;
-    } else if (changeType === "negative") {
-      return <TrendingDown className="h-4 w-4" />;
     }
     return null;
   };
@@ -61,19 +88,14 @@ export function KPICard({
           </div>
 
           {badge && (
-            <span
-              className={cn(
-                badgeColorClasses[badgeType] || badgeColorClasses.neutral,
-                "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap flex-shrink-0"
-              )}
-            >
+            <Badge variant={badgeType} className="flex-shrink-0">
               {getBadgeIcon()}
-              {badge}
-            </span>
+              {displayBadge}
+            </Badge>
           )}
         </div>
 
-        <dd className="text-2xl font-semibold tracking-tight text-foreground">{stat}</dd>
+        <dd className="text-2xl font-semibold tracking-tight text-foreground">{displayStat}</dd>
 
         {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
       </div>

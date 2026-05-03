@@ -249,3 +249,70 @@ export const getTimeRangeLabel = (timeRange) => {
   const option = GRAPH_TIME_RANGE_OPTIONS.find((item) => item.value === timeRange);
   return option?.label || "Month";
 };
+
+export const buildEarningTrendData = (earnings, timeRange, options = {}) => {
+  const earningsAsExpenses = (earnings || []).map((e) => ({
+    expenseDate: e?.earningDate,
+    amount: e?.amount,
+  }));
+
+  const bounds = resolveProjectRangeBounds(earningsAsExpenses, options);
+  if (!bounds) return [];
+
+  const { startDate, endDate } = bounds;
+  const buckets = buildBuckets(timeRange, startDate, endDate);
+  const bucketTotals = new Map();
+
+  (earnings || []).forEach((earning) => {
+    const date = parseDateLike(earning?.earningDate);
+    if (!date || date < startDate || date > endDate) return;
+    const key = getBucketKeyFromExpenseDate(timeRange, date, startDate);
+    bucketTotals.set(key, (bucketTotals.get(key) || 0) + Number(earning?.amount || 0));
+  });
+
+  return buckets.map((bucket) => ({
+    date: bucket.label,
+    amount: Number((bucketTotals.get(bucket.key) || 0).toFixed(2)),
+  }));
+};
+
+export const buildProfitTrendData = (earnings, expenses, timeRange, options = {}) => {
+  // Map earnings to expense-shaped items so resolveProjectRangeBounds can handle both
+  const earningsAsItems = (earnings || []).map((e) => ({
+    expenseDate: e?.earningDate,
+    amount: e?.amount,
+  }));
+
+  const combined = [...earningsAsItems, ...(expenses || [])];
+  const bounds = resolveProjectRangeBounds(combined, options);
+  if (!bounds) return [];
+
+  const { startDate, endDate } = bounds;
+  const buckets = buildBuckets(timeRange, startDate, endDate);
+
+  const earningBuckets = new Map();
+  const expenseBuckets = new Map();
+
+  (earnings || []).forEach((earning) => {
+    const date = parseDateLike(earning?.earningDate);
+    if (!date || date < startDate || date > endDate) return;
+    const key = getBucketKeyFromExpenseDate(timeRange, date, startDate);
+    earningBuckets.set(key, (earningBuckets.get(key) || 0) + Number(earning?.amount || 0));
+  });
+
+  (expenses || []).forEach((expense) => {
+    const date = getExpenseDate(expense);
+    if (!date || date < startDate || date > endDate) return;
+    const key = getBucketKeyFromExpenseDate(timeRange, date, startDate);
+    expenseBuckets.set(key, (expenseBuckets.get(key) || 0) + Number(expense?.amount || 0));
+  });
+
+  return buckets.map((bucket) => ({
+    date: bucket.label,
+    earnings: Number((earningBuckets.get(bucket.key) || 0).toFixed(2)),
+    expenses: Number((expenseBuckets.get(bucket.key) || 0).toFixed(2)),
+    profit: Number(
+      ((earningBuckets.get(bucket.key) || 0) - (expenseBuckets.get(bucket.key) || 0)).toFixed(2)
+    ),
+  }));
+};

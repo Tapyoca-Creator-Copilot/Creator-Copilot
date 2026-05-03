@@ -86,7 +86,7 @@ const AddEarningsDialog = ({
         <DialogHeader>
           <DialogTitle>Add Earning</DialogTitle>
           <DialogDescription>
-            Log income for the selected project. Fields marked required help keep your revenue accurate.
+            Log income for the selected project. Fields marked required help keep your earnings accurate.
           </DialogDescription>
         </DialogHeader>
 

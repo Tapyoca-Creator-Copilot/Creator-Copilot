@@ -10,12 +10,14 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserAuth } from "@/features/auth/context/AuthContext";
 import ArchiveProjectDialog from "@/features/projects/components/ArchiveProjectDialog";
 import { ProjectDetailContent } from "@/features/projects/components/ProjectDetailContent";
+import { useActiveProject } from "@/features/projects/hooks/useActiveProject";
 import { archiveProject, getProjectById } from "@/features/projects/services/projects";
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const { session } = UserAuth();
+  const { refreshProjects } = useActiveProject();
 
   const [project, setProject] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,12 +58,13 @@ const ProjectDetailPage = () => {
       await archiveProject(project.id, { userId: session.user.id });
       toast.success("Project archived.");
       setIsArchiveDialogOpen(false);
+      await refreshProjects();
       navigate("/projects");
     } catch (error) {
       toast.error(error?.message || "Unable to archive this project.");
     }
     setIsArchiving(false);
-  }, [navigate, project?.id, session?.user?.id]);
+  }, [navigate, project?.id, refreshProjects, session?.user?.id]);
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "260px" }}>

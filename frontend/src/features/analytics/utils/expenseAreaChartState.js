@@ -72,7 +72,7 @@ export const resolveExpenseAreaChartState = ({
       shouldRenderChart: false,
       shouldRenderInsight: false,
       emptyState: {
-        title: "No spending recorded in this range.",
+        title: "No expenses recorded in this range.",
         description: "Add expenses in the selected project and time view to render a trend.",
       },
     };

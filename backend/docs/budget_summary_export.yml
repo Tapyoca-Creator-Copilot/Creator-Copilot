@@ -4,7 +4,7 @@ summary: Export budget summary as CSV
 description: |
   Download the budget summary for a project as a CSV file, including
   budget ceiling, total spent, remaining balance, and a department-level
-  spending breakdown.
+  expense breakdown.
 produces:
   - text/csv
 parameters:

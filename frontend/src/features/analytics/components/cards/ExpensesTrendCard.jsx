@@ -1,12 +1,13 @@
-import ExpenseAreaChartCardView from "@/features/analytics/components/ExpenseAreaChartCardView";
+import ExpensesTrendCardView from "@/features/analytics/components/cards/ExpensesTrendCardView";
 import useExpenseAreaChartCard from "@/features/analytics/hooks/useExpenseAreaChartCard";
 
-const ExpenseAreaChartCard = ({
+const ExpensesTrendCard = ({
   projectId,
   expenses = [],
   isLoading = false,
   timeRange = "month",
   onTimeRangeChange,
+  currency,
   projectStartDate,
   projectEndDate,
   showTimeRangeFilter = true,
@@ -15,12 +16,13 @@ const ExpenseAreaChartCard = ({
     projectId,
     expenses,
     timeRange,
+    currency,
     projectStartDate,
     projectEndDate,
   });
 
   return (
-    <ExpenseAreaChartCardView
+    <ExpensesTrendCardView
       isLoading={isLoading}
       projectId={projectId}
       chartData={chartModel.chartData}
@@ -41,4 +43,4 @@ const ExpenseAreaChartCard = ({
   );
 };
 
-export default ExpenseAreaChartCard;
+export default ExpensesTrendCard;

@@ -1,3 +1,4 @@
+import { getEarnings } from "@/features/earnings/services/earnings";
 import { getExpenses } from "@/features/expenses/services/expenses";
 import { getProjectById } from "@/features/projects/services/projects";
 import { useEffect, useState } from "react";
@@ -5,6 +6,7 @@ import { useEffect, useState } from "react";
 export function useProjectAnalyticsData({ userId, projectId }) {
   const [project, setProject] = useState(null);
   const [expenses, setExpenses] = useState([]);
+  const [earnings, setEarnings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -16,6 +18,7 @@ export function useProjectAnalyticsData({ userId, projectId }) {
         if (isMounted) {
           setProject(null);
           setExpenses([]);
+          setEarnings([]);
           setError(null);
           setIsLoading(false);
         }
@@ -25,31 +28,28 @@ export function useProjectAnalyticsData({ userId, projectId }) {
       setIsLoading(true);
       setError(null);
 
-      try {
-        const [projectResponse, expensesResponse] = await Promise.all([
-          getProjectById(projectId, { userId }),
-          getExpenses({ userId, projectId }),
-        ]);
+      const [projectResult, expensesResult, earningsResult] = await Promise.allSettled([
+        getProjectById(projectId, { userId }),
+        getExpenses({ userId, projectId }),
+        getEarnings({ userId, projectId }),
+      ]);
 
-        if (!isMounted) {
-          return;
-        }
+      if (!isMounted) return;
 
-        setProject(projectResponse?.data || null);
-        setExpenses(expensesResponse?.data || []);
-      } catch (err) {
-        if (!isMounted) {
-          return;
-        }
-
+      if (projectResult.status === "rejected" && expensesResult.status === "rejected") {
         setProject(null);
         setExpenses([]);
-        setError(err?.message || "Failed to load project analytics data");
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setEarnings([]);
+        setError(projectResult.reason?.message || "Failed to load project analytics data");
+        setIsLoading(false);
+        return;
       }
+
+      setProject(projectResult.status === "fulfilled" ? projectResult.value?.data || null : null);
+      setExpenses(expensesResult.status === "fulfilled" ? expensesResult.value?.data || [] : []);
+      setEarnings(earningsResult.status === "fulfilled" ? earningsResult.value?.data || [] : []);
+      setError(null);
+      setIsLoading(false);
     };
 
     loadData();
@@ -59,5 +59,5 @@ export function useProjectAnalyticsData({ userId, projectId }) {
     };
   }, [projectId, userId]);
 
-  return { project, expenses, isLoading, error };
+  return { project, expenses, earnings, isLoading, error };
 }

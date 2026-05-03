@@ -1,5 +1,4 @@
-import { apiFetch, apiFetchResponse } from "@/lib/apiClient";
-import { supabase } from "@/supabaseClient";
+import { apiFetchResponse } from "@/lib/apiClient";
 
 export const EARNING_SOURCE_TYPES = [
   "Music Release",
@@ -13,9 +12,17 @@ export const EARNING_SOURCE_TYPES = [
   "Other",
 ];
 
-// ─── Normalizers ────────────────────────────────────────────────────────────
+export const resolveEarningSourceFilterValue = (sourceType) => {
+  const value = typeof sourceType === "string" ? sourceType.trim() : "";
+  if (!value) {
+    return "Other";
+  }
 
-// Normalize a response from the backend API (camelCase keys)
+  return EARNING_SOURCE_TYPES.includes(value) ? value : "Other";
+};
+
+// ─── Normalizer ──────────────────────────────────────────────────────────────
+
 export const normalizeEarning = (earning) => {
   if (!earning) return null;
   return {
@@ -34,149 +41,61 @@ export const normalizeEarning = (earning) => {
   };
 };
 
-// Normalize a row from Supabase (snake_case keys)
-const normalizeEarningFromDb = (row) => {
-  if (!row) return null;
-  return {
-    id: row.id,
-    userId: row.user_id,
-    projectId: row.project_id,
-    name: row.name,
-    amount: Number(row.amount ?? 0),
-    sourceType: row.source_type,
-    description: row.description ?? null,
-    earningDate: row.earning_date,
-    contractUrl: row.contract_url ?? null,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    project: row.project ?? null,
-  };
-};
+// ─── API Client (Backend) ────────────────────────────────────────────────────
 
-const EARNINGS_SELECT =
-  "id, user_id, project_id, name, amount, source_type, description, earning_date, contract_url, created_at, updated_at, project:projects(id, name, currency)";
+export const getEarnings = async (options = {}) => {
+  if (!options.projectId) throw new Error("Project ID is required.");
 
-// ─── Supabase (direct) ───────────────────────────────────────────────────────
-
-export const getEarningsFromSupabase = async (options = {}) => {
-  if (!options.userId) throw new Error("You must be signed in to view earnings.");
-  if (!options.projectId) return { data: [], source: "supabase" };
-
-  let query = supabase
-    .from("earnings")
-    .select(EARNINGS_SELECT)
-    .eq("user_id", options.userId)
-    .eq("project_id", options.projectId)
-    .order("earning_date", { ascending: false })
-    .order("created_at", { ascending: false });
-
+  const query = new URLSearchParams();
   if (options.sourceType && options.sourceType !== "all") {
-    query = query.eq("source_type", options.sourceType);
+    query.append("sourceType", options.sourceType);
   }
 
-  const { data, error } = await query;
-  if (error) throw new Error(error.message || "Unable to load earnings.");
+  const url = `/api/projects/${options.projectId}/earnings${query.toString() ? `?${query}` : ""}`;
+  const response = await apiFetchResponse(url);
 
-  return {
-    data: (data || []).map(normalizeEarningFromDb).filter(Boolean),
-    source: "supabase",
-  };
-};
-
-export const createEarningInSupabase = async (payload, options = {}) => {
-  const userId = options.userId || payload.userId;
-  if (!userId) throw new Error("You must be signed in to add an earning.");
-  if (!payload.projectId) throw new Error("Project is required to add an earning.");
-
-  const { data, error } = await supabase
-    .from("earnings")
-    .insert({
-      user_id: userId,
-      project_id: payload.projectId,
-      name: payload.name?.trim() || "",
-      amount: payload.amount,
-      source_type: payload.sourceType,
-      description: payload.description?.trim() || null,
-      earning_date: payload.earningDate,
-      contract_url: payload.contractUrl?.trim() || null,
-    })
-    .select(EARNINGS_SELECT)
-    .single();
-
-  if (error || !data) throw new Error(error?.message || "Unable to add earning.");
-
-  return { data: normalizeEarningFromDb(data), source: "supabase" };
-};
-
-export const updateEarningInSupabase = async (earningId, payload, options = {}) => {
-  const userId = options.userId ?? payload?.userId;
-  if (!userId) throw new Error("You must be signed in to update an earning.");
-  if (!earningId) throw new Error("Earning ID is required.");
-
-  const { data, error } = await supabase
-    .from("earnings")
-    .update({
-      name: payload.name,
-      amount: payload.amount,
-      source_type: payload.sourceType,
-      description: payload.description || null,
-      earning_date: payload.earningDate,
-      contract_url: payload.contractUrl || null,
-    })
-    .eq("id", earningId)
-    .eq("user_id", userId)
-    .select(EARNINGS_SELECT)
-    .single();
-
-  if (error || !data) throw new Error(error?.message || "Unable to update earning.");
-
-  return { data: normalizeEarningFromDb(data), source: "supabase" };
-};
-
-export const deleteEarningInSupabase = async (earningId, options = {}) => {
-  if (!options.userId) throw new Error("You must be signed in to delete an earning.");
-  if (!earningId) throw new Error("Earning ID is required.");
-
-  const { error } = await supabase
-    .from("earnings")
-    .delete()
-    .eq("id", earningId)
-    .eq("user_id", options.userId);
-
-  if (error) throw new Error(error.message || "Unable to delete earning.");
-
-  return { data: { id: earningId }, source: "supabase" };
-};
-
-// ─── Backend API ─────────────────────────────────────────────────────────────
-
-export const getEarningsFromApi = async (options = {}) => {
-  if (!options.userId) throw new Error("You must be signed in to view earnings.");
-  if (!options.projectId) return { data: [], source: "api" };
-
-  const params = new URLSearchParams();
-  if (options.sourceType && options.sourceType !== "all") {
-    params.set("sourceType", options.sourceType);
+  if (!response.ok) {
+    throw new Error(`Failed to load earnings: ${response.statusText}`);
   }
 
-  const qs = params.toString();
-  const path = `/api/projects/${options.projectId}/earnings${qs ? `?${qs}` : ""}`;
-  const body = await apiFetch(path);
-
+  const json = await response.json();
   return {
-    data: (body.data || []).map(normalizeEarning).filter(Boolean),
+    data: (json.data || []).map(normalizeEarning).filter(Boolean),
     source: "api",
   };
 };
 
-export const createEarningViaApi = async (payload, options = {}) => {
-  if (!options.userId && !payload.userId) throw new Error("You must be signed in to add an earning.");
-  if (!payload.projectId) throw new Error("Project is required to add an earning.");
+export const getEarningById = async (projectId, earningId) => {
+  if (!projectId || !earningId) throw new Error("Project ID and Earning ID are required.");
 
-  const body = await apiFetch(`/api/projects/${payload.projectId}/earnings`, {
+  const url = `/api/projects/${projectId}/earnings/${earningId}`;
+  const response = await apiFetchResponse(url);
+
+  if (!response.ok) {
+    if (response.status === 404) throw new Error("Earning not found.");
+    throw new Error(`Failed to load earning: ${response.statusText}`);
+  }
+
+  const json = await response.json();
+  return { data: normalizeEarning(json.data), source: "api" };
+};
+
+export const createEarning = async (payload) => {
+  const projectId = payload.projectId;
+  if (!projectId) throw new Error("Project ID is required.");
+  if (!payload.name) throw new Error("Name is required.");
+  if (typeof payload.amount !== "number" || payload.amount <= 0) {
+    throw new Error("Amount must be a positive number.");
+  }
+  if (!payload.sourceType) throw new Error("Source type is required.");
+  if (!payload.earningDate) throw new Error("Earning date is required.");
+
+  const url = `/api/projects/${projectId}/earnings`;
+  const response = await apiFetchResponse(url, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      name: payload.name?.trim() || "",
+      name: payload.name?.trim(),
       amount: payload.amount,
       sourceType: payload.sourceType,
       description: payload.description?.trim() || null,
@@ -185,61 +104,122 @@ export const createEarningViaApi = async (payload, options = {}) => {
     }),
   });
 
-  return { data: normalizeEarning(body.data), source: "api" };
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Unable to create earning.");
+  }
+
+  const json = await response.json();
+  return { data: normalizeEarning(json.data), source: "api" };
 };
 
-export const updateEarningViaApi = async (earningId, payload, options = {}) => {
-  const userId = options.userId ?? payload?.userId;
-  if (!userId) throw new Error("You must be signed in to update an earning.");
-  if (!earningId) throw new Error("Earning ID is required.");
-
+export const updateEarning = async (earningId, payload, options = {}) => {
   const projectId = payload.projectId || options.projectId;
-  if (!projectId) throw new Error("Project ID is required.");
+  if (!projectId || !earningId) throw new Error("Project ID and Earning ID are required.");
 
-  const body = await apiFetch(`/api/projects/${projectId}/earnings/${earningId}`, {
+  const url = `/api/projects/${projectId}/earnings/${earningId}`;
+  const response = await apiFetchResponse(url, {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      name: payload.name,
-      amount: payload.amount,
-      sourceType: payload.sourceType,
-      description: payload.description,
-      earningDate: payload.earningDate,
-      contractUrl: payload.contractUrl,
-      projectId: payload.projectId,
+      name: payload.name?.trim() || undefined,
+      amount: payload.amount !== undefined ? payload.amount : undefined,
+      sourceType: payload.sourceType || undefined,
+      description: payload.description?.trim() || null,
+      earningDate: payload.earningDate || undefined,
+      contractUrl: payload.contractUrl?.trim() || null,
     }),
   });
 
-  return { data: normalizeEarning(body.data), source: "api" };
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Unable to update earning.");
+  }
+
+  const json = await response.json();
+  return { data: normalizeEarning(json.data), source: "api" };
 };
 
-export const deleteEarningViaApi = async (earningId, options = {}) => {
-  if (!options.userId) throw new Error("You must be signed in to delete an earning.");
-  if (!earningId) throw new Error("Earning ID is required.");
-  if (!options.projectId) throw new Error("Project ID is required.");
+export const deleteEarning = async (earningId, options = {}) => {
+  const projectId = options.projectId;
+  if (!projectId || !earningId) throw new Error("Project ID and Earning ID are required.");
 
-  await apiFetch(`/api/projects/${options.projectId}/earnings/${earningId}`, {
+  const url = `/api/projects/${projectId}/earnings/${earningId}`;
+  const response = await apiFetchResponse(url, {
     method: "DELETE",
   });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Unable to delete earning.");
+  }
 
   return { data: { id: earningId }, source: "api" };
 };
 
-export const importEarningsCsv = async (projectId, file, columnMapping, options = {}) => {
-  if (!options.userId) throw new Error("You must be signed in to import earnings.");
-  if (!projectId) throw new Error("Project ID is required to import earnings.");
-  if (!file) throw new Error("A CSV file is required to import earnings.");
-  if (!columnMapping || typeof columnMapping !== "object" || Array.isArray(columnMapping)) {
-    throw new Error("A valid column mapping is required to import earnings.");
+export const importEarningsFromCsv = async (projectId, file, columnMapping) => {
+  if (!projectId) throw new Error("Project ID is required.");
+  if (!file) throw new Error("CSV file is required.");
+  if (!columnMapping || Object.keys(columnMapping).length === 0) {
+    throw new Error("Column mapping is required.");
   }
 
-  const form = new FormData();
-  form.append("file", file);
-  form.append("mapping", JSON.stringify(columnMapping));
+  const url = `/api/projects/${projectId}/earnings/import`;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("mapping", JSON.stringify(columnMapping));
 
-  const body = await apiFetch(`/api/projects/${projectId}/earnings/import`, {
+  const response = await apiFetchResponse(url, {
     method: "POST",
-    body: form,
+    body: formData,
   });
 
-  return { data: body.data, source: "api" };
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Unable to import earnings.");
+  }
+
+  const json = await response.json();
+  return {
+    data: json.data,
+    source: "api",
+  };
+};
+
+export const exportEarningsAsCsv = async (projectId, options = {}) => {
+  if (!options.userId) {
+    throw new Error("You must be signed in to export earnings.");
+  }
+
+  if (!projectId) {
+    throw new Error("Project ID is required to export earnings.");
+  }
+
+  const res = await apiFetchResponse(`/api/projects/${projectId}/earnings/export`, {
+    method: "GET",
+  });
+
+  const blob = await res.blob();
+
+  const getFilenameFromDisposition = (disposition) => {
+    if (!disposition || typeof disposition !== "string") {
+      return null;
+    }
+    const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+    const raw = match?.[1] || match?.[2];
+    if (!raw) {
+      return null;
+    }
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  };
+
+  const filename =
+    getFilenameFromDisposition(res.headers.get("content-disposition")) ||
+    `earnings_${projectId}.csv`;
+
+  return { blob, filename };
 };

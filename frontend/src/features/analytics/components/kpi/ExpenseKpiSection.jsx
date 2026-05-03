@@ -2,10 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { filterExpensesByTimeRange, getTimeRangeLabel } from "@/features/analytics/utils/graphTimeRange";
 import { buildKpiData } from "@/features/analytics/utils/kpiMetrics";
 import { useMemo } from "react";
-import { KPICard } from "./KPICard";
-import { buildExpenseKpiCards } from "./kpiCardPresets";
+import { KpiCard } from "./KpiCard";
+import { buildExpenseKpiCards } from "./presets";
 
-export function KPICardsSection({
+export function ExpenseKpiSection({
   projectId,
   project,
   expenses = [],
@@ -53,7 +53,7 @@ export function KPICardsSection({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {expenseKpiCards.map((card) => (
-        <KPICard key={card.name} {...card} />
+        <KpiCard key={card.name} {...card} />
       ))}
     </div>
   );

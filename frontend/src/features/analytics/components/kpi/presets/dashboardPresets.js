@@ -1,0 +1,100 @@
+import { Briefcase, CreditCard, DollarSign, Percent, Scale, Target, TrendingUp } from "lucide-react";
+
+export const buildDashboardKpiCards = ({
+  currencyFormatter,
+  budgetAmount,
+  spentAmount,
+  remainingAmount,
+  budgetUsedPercent,
+  filteredExpenses,
+  averageExpense,
+}) => [
+  {
+    name: "Total Budget",
+    stat: currencyFormatter(budgetAmount),
+    rawValue: budgetAmount,
+    formatter: currencyFormatter,
+    icon: Briefcase,
+    helper: "Project budget ceiling",
+  },
+  {
+    name: "Total Spent",
+    stat: currencyFormatter(spentAmount),
+    rawValue: spentAmount,
+    formatter: currencyFormatter,
+    icon: CreditCard,
+    helper: `Across ${filteredExpenses.length} expenses`,
+    badge: budgetAmount > 0 ? `${budgetUsedPercent.toFixed(0)}%` : "—",
+    badgeRawValue: budgetAmount > 0 ? budgetUsedPercent : null,
+    badgeFormatter: (v) => `${Math.round(v)}%`,
+    badgeType: budgetAmount > 0 && budgetUsedPercent > 90 ? "negative" : "positive",
+  },
+  {
+    name: "Remaining Budget",
+    stat: currencyFormatter(remainingAmount),
+    rawValue: remainingAmount,
+    formatter: currencyFormatter,
+    icon: Target,
+    helper: remainingAmount < 0 ? "Over budget" : "Available to allocate",
+    badge: remainingAmount < 0 ? "Over budget" : "On track",
+    badgeType: remainingAmount < 0 ? "negative" : "positive",
+  },
+  {
+    name: "Budget Used",
+    stat: `${budgetUsedPercent.toFixed(1)}%`,
+    rawValue: budgetUsedPercent,
+    formatter: (v) => `${v.toFixed(1)}%`,
+    icon: Percent,
+    helper: budgetAmount > 0 ? `${currencyFormatter(averageExpense)} avg per expense` : "Set a budget to enable ratio",
+    badge: budgetAmount > 0 ? (budgetUsedPercent > 90 ? "High usage" : "Low usage") : "—",
+    badgeType: budgetAmount > 0 && budgetUsedPercent > 90 ? "negative" : "positive",
+  },
+];
+
+export const buildDashboardEarningsCards = ({
+  currencyFormatter,
+  totalEarnings,
+  netProfit,
+  profitMargin,
+  avgEarning,
+  earningsCount,
+}) => [
+  {
+    name: "Total Earnings",
+    stat: currencyFormatter(totalEarnings),
+    rawValue: totalEarnings,
+    formatter: currencyFormatter,
+    icon: TrendingUp,
+    helper: `Across ${earningsCount} earning${earningsCount !== 1 ? "s" : ""}`,
+  },
+  {
+    name: "Net Profit",
+    stat: currencyFormatter(netProfit),
+    rawValue: netProfit,
+    formatter: currencyFormatter,
+    icon: Scale,
+    helper: netProfit >= 0 ? "Above break-even" : "Below break-even",
+    badge: netProfit >= 0 ? "Profitable" : "In the red",
+    badgeType: netProfit >= 0 ? "positive" : "negative",
+  },
+  {
+    name: "Profit Margin",
+    stat: totalEarnings > 0 ? `${profitMargin.toFixed(1)}%` : "—",
+    rawValue: totalEarnings > 0 ? profitMargin : null,
+    formatter: (v) => `${v.toFixed(1)}%`,
+    icon: Percent,
+    helper: totalEarnings > 0 ? "Of earnings kept after expenses" : "Log earnings to calculate",
+    badge: totalEarnings > 0
+      ? profitMargin >= 50 ? "Healthy" : profitMargin >= 20 ? "Moderate" : profitMargin >= 0 ? "Low" : "In the red"
+      : "—",
+    badgeType: totalEarnings > 0 ? profitMargin >= 20 ? "positive" : "negative" : "neutral",
+  },
+  {
+    name: "Avg. Earning",
+    stat: currencyFormatter(avgEarning),
+    rawValue: avgEarning,
+    formatter: currencyFormatter,
+    icon: DollarSign,
+    helper: "Per earning logged",
+  },
+];

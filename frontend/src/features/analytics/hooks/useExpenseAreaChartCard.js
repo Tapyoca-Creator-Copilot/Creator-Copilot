@@ -1,31 +1,40 @@
-import ExpenseChartTooltip from "@/features/analytics/components/chart-tooltip/ExpenseChartTooltip";
+import SingleValueChartTooltip from "@/features/analytics/components/shared/SingleValueChartTooltip";
 import {
-    cx,
-    formatChange,
-    getChangeColorClass,
-    getInsightCopy,
+  cx,
+  formatChange,
+  getChangeColorClass,
+  getInsightCopy,
 } from "@/features/analytics/utils/areaChartInsights";
 import { resolveExpenseAreaChartState } from "@/features/analytics/utils/expenseAreaChartState";
 import { currencyFormatter } from "@/features/analytics/utils/formatters";
 import {
-    buildExpenseTrendData,
-    filterExpensesByTimeRange,
-    getTimeRangeLabel,
+  buildExpenseTrendData,
+  filterExpensesByTimeRange,
+  getTimeRangeLabel,
 } from "@/features/analytics/utils/graphTimeRange";
-import { createElement, useCallback, useEffect, useMemo, useState } from "react";
+import { createElement, useCallback, useMemo, useState } from "react";
 
 const useExpenseAreaChartCard = ({
   projectId,
   expenses = [],
   timeRange = "month",
+  currency: projectCurrency,
   projectStartDate,
   projectEndDate,
 }) => {
   const [tooltipState, setTooltipState] = useState(null);
 
-  useEffect(() => {
-    setTooltipState(null);
-  }, [projectId, timeRange]);
+  const currency = useMemo(
+    () => projectCurrency || expenses.find((expense) => expense?.project?.currency)?.project?.currency || "USD",
+    [expenses, projectCurrency]
+  );
+
+  const tooltipKey = useMemo(
+    () => `${projectId || "no-project"}:${timeRange}`,
+    [projectId, timeRange]
+  );
+
+  const resolvedTooltipState = tooltipState?.key === tooltipKey ? tooltipState : null;
 
   const filteredExpenses = useMemo(
     () => filterExpensesByTimeRange(expenses, timeRange, { projectStartDate, projectEndDate }),
@@ -46,7 +55,7 @@ const useExpenseAreaChartCard = ({
     [filteredExpenses]
   );
 
-  const payload = tooltipState?.payload?.[0];
+  const payload = resolvedTooltipState?.payload?.[0];
   const value = payload?.payload?.[payload?.dataKey];
   const currentDate = payload?.payload?.date || chartData[chartData.length - 1]?.date || "--";
 
@@ -69,9 +78,18 @@ const useExpenseAreaChartCard = ({
     };
   }, [chartData, payload, value]);
 
-  const formattedValue = payload ? currencyFormatter(value) : currencyFormatter(rangeTotal);
+  const formattedValue = payload
+    ? currencyFormatter(value, currency)
+    : currencyFormatter(rangeTotal, currency);
   const timeRangeLabel = getTimeRangeLabel(timeRange).toLowerCase();
-  const insightCopy = getInsightCopy(chartData, payload, percentageChange, absoluteChange, timeRangeLabel);
+  const insightCopy = getInsightCopy(
+    chartData,
+    payload,
+    percentageChange,
+    absoluteChange,
+    timeRangeLabel,
+    currency
+  );
 
   const xAxisTicks = useMemo(() => {
     if (!chartData.length) {
@@ -137,17 +155,17 @@ const useExpenseAreaChartCard = ({
     "rounded-md px-2 py-1 text-sm font-medium",
     getChangeColorClass(payload, percentageChange)
   );
-  const changeChipLabel = formatChange(payload, percentageChange, absoluteChange);
+  const changeChipLabel = formatChange(payload, percentageChange, absoluteChange, currency);
 
   const renderTooltipContent = useCallback(
     ({ active, payload: tooltipPayload, label }) => {
       if (active) {
         setTooltipState((previous) => {
-          if (previous?.label === label) {
+          if (previous?.key === tooltipKey && previous?.label === label) {
             return previous;
           }
 
-          return { payload: tooltipPayload, label };
+          return { key: tooltipKey, payload: tooltipPayload, label };
         });
       } else {
         setTooltipState(null);
@@ -161,14 +179,14 @@ const useExpenseAreaChartCard = ({
         return null;
       }
 
-      return createElement(ExpenseChartTooltip, {
+      return createElement(SingleValueChartTooltip, {
         title: tooltipDate,
-        value: currencyFormatter(tooltipAmount),
-        markerColor: "var(--primary)",
+        value: currencyFormatter(tooltipAmount, currency),
+        markerColor: "var(--area-chart-expense-stroke)",
         markerLabel: "expenses",
       });
     },
-    []
+    [currency, tooltipKey]
   );
 
   return {

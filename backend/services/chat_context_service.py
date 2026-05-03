@@ -160,7 +160,7 @@ def build_system_prompt(context):
 
             dept = p.get("departmentBreakdown", {})
             if dept:
-                lines.append(f"  Spending by department:")
+                lines.append(f"  Expenses by department:")
                 for dept_name, dept_total in sorted(dept.items(), key=lambda x: -x[1]):
                     lines.append(f"    - {dept_name}: {currency} {dept_total:,.2f}")
 
